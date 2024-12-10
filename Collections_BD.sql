@@ -7,12 +7,12 @@ auteurLivre VARCHAR(50)
 );
 
 CREATE TABLE Collections.Timbres (
-idTimbre int PRIMARY KEY NOT NULL,
+idTimbre int PRIMARY KEY NOT NULL AUTO_INCREMENT,
 nomTimbre VARCHAR(50)
 );
 
 CREATE table Collections.CartePostale (
-idCartePostale int primary key,
+idCartePostale int primary key AUTO_INCREMENT,
 titreCartePostale varchar(50)
 );
 
