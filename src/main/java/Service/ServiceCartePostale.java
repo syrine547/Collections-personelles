@@ -7,10 +7,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServiceCartePostale implements IServiceCartePostale <CartePostale> {
+public class ServiceCartePostale implements IServiceCartePostale <CartePostale>, ServiceStatistique {
 
     private Connection con = DataSource.getInstance().getCon();
     private Statement ste = null;
+    private static final int OBJECTIF_TOTAL = 70;
 
     public ServiceCartePostale() {
         try {
@@ -95,5 +96,20 @@ public class ServiceCartePostale implements IServiceCartePostale <CartePostale> 
             list.add(cartePostale);
         }
         return list;
+    }
+
+    // Nombre total de Cartes Postale
+    public int getNombreTotal() throws SQLException {
+        String req = "SELECT COUNT(*) AS total FROM Collections.CartePostale";
+        ResultSet resultSet = ste.executeQuery(req);
+        if (resultSet.next()) {
+            return resultSet.getInt("total");
+        }
+        return 0;
+    }
+
+    @Override
+    public int getObjectifTotal() {
+        return OBJECTIF_TOTAL;
     }
 }

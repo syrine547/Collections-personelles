@@ -6,10 +6,11 @@ import Entity.PieceMonnaie;
 import Utils.DataSource;
 
 import java.sql.*;
-public class ServicePieceMonnaie implements IServicePieceMonnaie<PieceMonnaie> {
+public class ServicePieceMonnaie implements IServicePieceMonnaie<PieceMonnaie>, ServiceStatistique {
 
     private Connection con = DataSource.getInstance().getCon();
     private Statement ste = null;
+    private static final int OBJECTIF_TOTAL = 80;
 
     public ServicePieceMonnaie() {
         try {
@@ -97,5 +98,20 @@ public class ServicePieceMonnaie implements IServicePieceMonnaie<PieceMonnaie> {
             list.add(pieceMonnaie);
         }
         return list;
+    }
+
+    // Nombre total de Pieces Monnaie
+    public int getNombreTotal() throws SQLException {
+        String req = "SELECT COUNT(*) AS total FROM Collections.PiecesMonnaie";
+        ResultSet resultSet = ste.executeQuery(req);
+        if (resultSet.next()) {
+            return resultSet.getInt("total");
+        }
+        return 0;
+    }
+
+    @Override
+    public int getObjectifTotal() {
+        return OBJECTIF_TOTAL;
     }
 }

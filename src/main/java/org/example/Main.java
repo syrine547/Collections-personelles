@@ -3,9 +3,11 @@ package org.example;
 import Entity.Livre;
 import Entity.PieceMonnaie;
 import Entity.CartePostale;
+import Entity.Timbre;
 import Service.ServiceLivre;
 import Service.ServicePieceMonnaie;
 import Service.ServiceCartePostale;
+import Service.ServiceTimbre;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -57,6 +59,60 @@ public class Main {
             for (CartePostale carte : cartes) {
                 System.out.println(carte);
             }
+
+            // Gestion des timbres
+            System.out.println("\n--- Gestion des Timbres ---");
+            ServiceTimbre serviceTimbre = new ServiceTimbre();
+
+            // Ajout de nouveaux timbres
+            System.out.println("Ajout de timbres...");
+            Timbre timbre1 = new Timbre("Timbre Rouge");
+            Timbre timbre2 = new Timbre("Timbre Bleu");
+
+            serviceTimbre.ajouterTimbre(timbre1);
+            serviceTimbre.ajouterTimbre(timbre2);
+
+            // Lecture et affichage de tous les timbres
+            System.out.println("Liste des timbres dans la base de données :");
+            List<Timbre> timbres = serviceTimbre.readALL();
+            for (Timbre t : timbres) {
+                System.out.println(t);
+            }
+            // --- Tester la méthode findById ---
+            System.out.println("\n--- Tester la méthode findById ---");
+            int idRecherche = 1; // Remplacez par un ID existant
+            Timbre timbreTrouve = serviceTimbre.findById(idRecherche);
+            if (timbreTrouve != null) {
+                System.out.println("Timbre trouvé : " + timbreTrouve);
+            } else {
+                System.out.println("Aucun timbre trouvé avec l'ID " + idRecherche);
+            }
+
+            // --- Tester la méthode supprimerTimbre ---
+            System.out.println("\n--- Tester la méthode supprimerTimbre ---");
+            if (timbreTrouve != null) {
+                boolean supprime = serviceTimbre.supprimerTimbre(timbreTrouve);
+                if (supprime) {
+                    System.out.println("Timbre supprimé avec succès : " + timbreTrouve);
+                } else {
+                    System.out.println("Échec de la suppression du timbre avec l'ID " + idRecherche);
+                }
+            }
+
+            // Vérifier si le timbre a été supprimé
+            System.out.println("\n--- Vérification après suppression ---");
+            List<Timbre> timbresApresSuppression = serviceTimbre.readALL();
+            System.out.println("Liste des timbres après suppression :");
+            for (Timbre t : timbresApresSuppression) {
+                System.out.println(t);
+            }
+
+            System.out.println("\n--- Statistiques ---\n");
+
+            serviceLivre.afficherRapport("Livres");
+            serviceCartePostale.afficherRapport("Cartes Postales");
+            serviceTimbre.afficherRapport("Timbres");
+            servicePieceMonnaie.afficherRapport("Pieces Monnaies");
 
         } catch (SQLException e) {
             System.out.println("Erreur SQL : " + e.getMessage());

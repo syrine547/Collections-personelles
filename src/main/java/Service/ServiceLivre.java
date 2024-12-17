@@ -6,9 +6,10 @@ import Utils.DataSource;
 
 import java.sql.*;
 
-public class ServiceLivre implements IServiceLivre<Livre> {
+public class ServiceLivre implements IServiceLivre<Livre>, ServiceStatistique {
     private Connection con = DataSource.getInstance().getCon();
     private Statement ste = null;
+    private static final int OBJECTIF_TOTAL = 100;
 
     public ServiceLivre() {
         try {
@@ -97,5 +98,21 @@ public class ServiceLivre implements IServiceLivre<Livre> {
             list.add(livre);
         }
         return list;
+    }
+
+    // Nombre total de livres
+    @Override
+    public int getNombreTotal() throws SQLException {
+        String req = "SELECT COUNT(*) AS total FROM Collections.Livres";
+        ResultSet resultSet = ste.executeQuery(req);
+        if (resultSet.next()) {
+            return resultSet.getInt("total");
+        }
+        return 0;
+    }
+
+    @Override
+    public int getObjectifTotal() {
+        return OBJECTIF_TOTAL;
     }
 }

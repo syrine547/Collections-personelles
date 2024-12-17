@@ -14,4 +14,5 @@ public interface IServiceCartePostale<T> {
     T findById(int id) throws SQLException;
 
     List<T> readALL() throws SQLException;
+
 }
