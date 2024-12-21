@@ -9,19 +9,18 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
     @Override
-    public void start(Stage primaryStage) {
-        try {
-            // Charge le fichier FXML
-            Parent root = FXMLLoader.load(getClass().getResource("/GestionLivres.fxml"));
-            primaryStage.setTitle("Gestion des Livres"); // Titre de la fenêtre
-            primaryStage.setScene(new Scene(root, 600, 400)); // Taille de la fenêtre
-            primaryStage.show(); // Affiche la fenêtre
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void start(Stage primaryStage) throws Exception {
+        // Charger le fichier FXML de GestionLivres
+        Parent root = FXMLLoader.load(getClass().getResource("/GestionLivres.fxml"));
+
+        // Configurer la scène principale
+        primaryStage.setTitle("Gestion des Livres");
+        primaryStage.setScene(new Scene(root));
+        primaryStage.show();
     }
 
     public static void main(String[] args) {
-        launch(args); // Lancer l'application JavaFX
+        // Lancer l'application JavaFX
+        launch(args);
     }
 }

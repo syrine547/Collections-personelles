@@ -11,7 +11,7 @@
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="Controllers.DashboardController">
 
     <!-- Partie haute : Boutons de navigation avec icônes -->
-    <HBox spacing="30" alignment="CENTER" padding="20">
+    <HBox spacing="30" alignment="CENTER">
         <Button text="Livres" onAction="#handleGestionLivres">
             <graphic>
                 <ImageView fitWidth="40" fitHeight="40" pickOnBounds="true" preserveRatio="true"
@@ -21,7 +21,7 @@
     </HBox>
 
     <!-- Partie centrale : PieCharts -->
-    <VBox spacing="20" alignment="CENTER" padding="20">
+    <VBox spacing="20" alignment="CENTER">
         <PieChart fx:id="pieChartLivres" title="Progression des Livres"/>
     </VBox>
 

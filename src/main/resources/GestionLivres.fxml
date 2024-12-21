@@ -1,17 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.GestionLivresController">
-    <children>
-        <!-- Titre -->
-        <Label layoutX="230.0" layoutY="50.0" text="Gestion des Livres" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="Controllers.GestionLivresController">
 
-        <!-- Boutons -->
-        <Button fx:id="btnAjouter" layoutX="200.0" layoutY="150.0" text="Ajouter" onAction="#handleAjouter" />
-        <Button fx:id="btnModifier" layoutX="300.0" layoutY="150.0" text="Modifier" onAction="#handleModifier" />
-        <Button fx:id="btnSupprimer" layoutX="400.0" layoutY="150.0" text="Supprimer" onAction="#handleSupprimer" />
-    </children>
-</AnchorPane>
+    <!-- Partie haute : Champs pour ajouter/modifier un livre -->
+    <top>
+        <VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+            <HBox spacing="10" alignment="CENTER">
+                <TextField fx:id="fieldTitre" promptText="Titre du livre" />
+                <TextField fx:id="fieldAuteur" promptText="Auteur du livre" />
+                <TextField fx:id="fieldAnnee" promptText="Année de publication" />
+                <TextField fx:id="fieldQuantite" promptText="Quantité" />
+            </HBox>
+            <HBox spacing="10" alignment="CENTER">
+                <Button text="Ajouter" onAction="#handleAjouterLivre" />
+                <Button text="Modifier" onAction="#handleModifierLivre" />
+                <Button text="Supprimer" onAction="#handleSupprimerLivre" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Partie centrale : TableView pour afficher les livres -->
+    <center>
+        <TableView fx:id="tableLivres" prefHeight="400">
+            <columns>
+                <TableColumn fx:id="colTitre" text="Titre" prefWidth="150" />
+                <TableColumn fx:id="colAuteur" text="Auteur" prefWidth="150" />
+                <TableColumn fx:id="colAnnee" text="Année" prefWidth="100" />
+                <TableColumn fx:id="colQuantite" text="Quantité" prefWidth="100" />
+            </columns>
+        </TableView>
+    </center>
+
+    <!-- Partie basse : Bouton pour revenir au tableau de bord -->
+    <bottom>
+        <HBox alignment="CENTER">
+            <Button text="Retour au Dashboard" onAction="#handleRetourDashboard" />
+        </HBox>
+    </bottom>
+
+</BorderPane>
+
