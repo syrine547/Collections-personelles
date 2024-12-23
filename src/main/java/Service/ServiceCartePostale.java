@@ -76,8 +76,9 @@ public class ServiceCartePostale implements IServiceCartePostale <CartePostale>,
         if (resultSet.next()) {
             int idCartePostale = resultSet.getInt("idCartePostale");
             String titreCartePostale = resultSet.getString("titreCartePostale");
+            int quantite = resultSet.getInt("quantite");
 
-            return new CartePostale(idCartePostale, titreCartePostale);
+            return new CartePostale(idCartePostale, titreCartePostale, quantite);
         }
         return null;
     }
@@ -91,8 +92,9 @@ public class ServiceCartePostale implements IServiceCartePostale <CartePostale>,
         while (resultSet.next()) {
             int idCartePostale = resultSet.getInt("idCartePostale");
             String titreCartePostale = resultSet.getString("titreCartePostale");
+            int quantite = resultSet.getInt("quantite");
 
-            CartePostale cartePostale = new CartePostale(idCartePostale, titreCartePostale);
+            CartePostale cartePostale = new CartePostale(idCartePostale, titreCartePostale, quantite);
             list.add(cartePostale);
         }
         return list;

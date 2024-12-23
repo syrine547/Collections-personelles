@@ -3,6 +3,13 @@ package Entity;
 public class CartePostale {
     private int idCartePostale;
     private String titreCartePostale;
+    private int quantite;
+
+    public CartePostale(int idCartePostale, String titreCartePostale, int quantite) {
+        this.idCartePostale = idCartePostale;
+        this.titreCartePostale = titreCartePostale;
+        this.quantite = quantite;
+    }
 
     public CartePostale(int idCartePostale, String titreCartePostale) {
         this.idCartePostale = idCartePostale;
@@ -22,6 +29,9 @@ public class CartePostale {
     public void setTitreCartePostale(String titre) {
         this.titreCartePostale = titre;
     }
+
+    public int getQuantite() {return quantite;}
+    public void setQuantite(int quantite) {this.quantite = quantite;}
 
     @Override
     public String toString() {

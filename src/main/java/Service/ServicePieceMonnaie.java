@@ -24,11 +24,12 @@ public class ServicePieceMonnaie implements IServicePieceMonnaie<PieceMonnaie>, 
     public boolean ajouterPieceMonnaie(PieceMonnaie pieceMonnaie) throws SQLException {
         // Ajouter Statement.RETURN_GENERATED_KEYS pour demander les clés générées
         PreparedStatement pre = con.prepareStatement(
-                "INSERT INTO Collections.PiecesMonnaie (valeurPiecesMonnaie, unitéPiecesMonnaie) VALUES (?, ?)",
+                "INSERT INTO Collections.PiecesMonnaie (valeurPiecesMonnaie, unitéPiecesMonnaie, quantité) VALUES (?, ?, ?)",
                 Statement.RETURN_GENERATED_KEYS
         );
         pre.setString(1, pieceMonnaie.getValeurPiecesMonnaie());
         pre.setString(2, pieceMonnaie.getUnitéPiecesMonnaie());
+        pre.setInt(3, pieceMonnaie.getQuantite());
 
         int res = pre.executeUpdate();
         if (res > 0) {
@@ -56,7 +57,7 @@ public class ServicePieceMonnaie implements IServicePieceMonnaie<PieceMonnaie>, 
 
     @Override
     public boolean updatePieceMonnaie(PieceMonnaie pieceMonnaie) throws SQLException {
-        String req = "UPDATE Collections.PiecesMonnaie SET valeurPiecesMonnaie = ?, unitéPiecesMonnaie = ? WHERE idPiecesMonnaie = ?";
+        String req = "UPDATE Collections.PiecesMonnaie SET valeurPiecesMonnaie = ?, unitéPiecesMonnaie = ? , quantité = ? WHERE idPiecesMonnaie = ?";
         PreparedStatement pre = con.prepareStatement(req);
         pre.setString(1, pieceMonnaie.getValeurPiecesMonnaie());
         pre.setString(2, pieceMonnaie.getUnitéPiecesMonnaie());
@@ -77,6 +78,7 @@ public class ServicePieceMonnaie implements IServicePieceMonnaie<PieceMonnaie>, 
             int idPiecesMonnaie = resultSet.getInt("idPiecesMonnaie");
             String valeurPiecesMonnaie = resultSet.getString("valeurPiecesMonnaie");
             String unitéPiecesMonnaie = resultSet.getString("unitéPiecesMonnaie");
+
 
             return new PieceMonnaie(idPiecesMonnaie, valeurPiecesMonnaie, unitéPiecesMonnaie);
         }

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="Controllers.GestionPieceMonnaieController">
+    <children>
+        <Label text="Gérer les Pièces de Monnaie" layoutX="20" layoutY="20" />
+
+        <Label text="Valeur:" layoutX="20" layoutY="60" />
+        <TextField fx:id="fieldValeur" layoutX="100" layoutY="60" />
+
+        <Label text="Unité:" layoutX="20" layoutY="100" />
+        <TextField fx:id="fieldUnite" layoutX="100" layoutY="100" />
+
+        <Label text="Quantité:" layoutX="20" layoutY="140" />
+        <TextField fx:id="fieldQuantite" layoutX="100" layoutY="140" />
+
+        <Button text="Ajouter" layoutX="20" layoutY="200" onAction="#handleAjouterPiece" />
+        <Button text="Modifier" layoutX="100" layoutY="200" onAction="#handleModifierPiece" />
+        <Button text="Supprimer" layoutX="180" layoutY="200" onAction="#handleSupprimerPiece" />
+
+        <TableView fx:id="tablePieces" layoutX="20" layoutY="240" prefHeight="200" prefWidth="360">
+            <columns>
+                <TableColumn text="Valeur" fx:id="colValeur" />
+                <TableColumn text="Unité" fx:id="colUnite" />
+                <TableColumn text="Quantité" fx:id="colQuantite" />
+            </columns>
+        </TableView>
+    </children>
+</AnchorPane>

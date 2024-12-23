@@ -18,7 +18,6 @@
             <HBox spacing="10" alignment="CENTER">
                 <TextField fx:id="fieldTitre" promptText="Titre du livre" />
                 <TextField fx:id="fieldAuteur" promptText="Auteur du livre" />
-                <TextField fx:id="fieldAnnee" promptText="Année de publication" />
                 <TextField fx:id="fieldQuantite" promptText="Quantité" />
             </HBox>
             <HBox spacing="10" alignment="CENTER">
@@ -35,7 +34,6 @@
             <columns>
                 <TableColumn fx:id="colTitre" text="Titre" prefWidth="150" />
                 <TableColumn fx:id="colAuteur" text="Auteur" prefWidth="150" />
-                <TableColumn fx:id="colAnnee" text="Année" prefWidth="100" />
                 <TableColumn fx:id="colQuantite" text="Quantité" prefWidth="100" />
             </columns>
         </TableView>
@@ -47,6 +45,5 @@
             <Button text="Retour au Dashboard" onAction="#handleRetourDashboard" />
         </HBox>
     </bottom>
-
 </BorderPane>
 

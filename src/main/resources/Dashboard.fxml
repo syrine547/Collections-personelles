@@ -1,28 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.chart.PieChart?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="Controllers.DashboardController">
+<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.DashboardController">
+    <!-- Barre de navigation supérieure -->
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #2c3e50; -fx-border-color: black;">
+            <!-- Section gauche : noms des collections -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Label text="Mes Collections" style="-fx-font-size: 18px; -fx-text-fill: white; -fx-font-weight: bold;" />
+                <Button text="Livres" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#handleNavigateToLivres"/>
+                <Button text="Timbres" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#handleNavigateToTimbres"/>
+                <Button text="Cartes Postales" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#handleNavigateToCartes"/>
+                <Button text="Pièces de Monnaie" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#handleNavigateToPieces"/>
+            </HBox>
 
-    <!-- Partie haute : Boutons de navigation avec icônes -->
-    <HBox spacing="30" alignment="CENTER">
-        <Button text="Livres" onAction="#handleGestionLivres">
-            <graphic>
-                <ImageView fitWidth="40" fitHeight="40" pickOnBounds="true" preserveRatio="true"
-                           image="/assets/book-icon.png"/>
-            </graphic>
-        </Button>
-    </HBox>
+            <!-- Section droite : boutons profil et déconnexion -->
+            <HBox spacing="10" alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                <Pane HBox.hgrow="ALWAYS"/> <!-- Espace flexible pour aligner les boutons à droite -->
+                <Button text="Profil" style="-fx-background-color: #1abc9c; -fx-text-fill: white;" onAction="#handleNavigateToProfil"/>
+                <Button text="Déconnexion" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#handleLogout"/>
+            </HBox>
+        </HBox>
+    </top>
 
-    <!-- Partie centrale : PieCharts -->
-    <VBox spacing="20" alignment="CENTER">
-        <PieChart fx:id="pieChartLivres" title="Progression des Livres"/>
-    </VBox>
+    <!-- Contenu principal -->
+    <center>
+        <GridPane fx:id="gridPaneCharts" prefWidth="800" prefHeight="600" hgap="20" vgap="20" alignment="CENTER">
+            <!-- Configurer les colonnes pour une disposition 3x2 -->
+            <columnConstraints>
+                <ColumnConstraints percentWidth="33.3"/>
+                <ColumnConstraints percentWidth="33.3"/>
+                <ColumnConstraints percentWidth="33.3"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="50"/>
+                <RowConstraints percentHeight="50"/>
+            </rowConstraints>
 
+            <!-- Charts comme précédemment -->
+            <VBox alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <Label text="Livres" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                <PieChart fx:id="pieChartLivres" prefWidth="200" prefHeight="200"/>
+            </VBox>
+            <VBox alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <Label text="Timbres" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                <PieChart fx:id="pieChartTimbres" prefWidth="200" prefHeight="200"/>
+            </VBox>
+            <VBox alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                <Label text="Cartes Postales" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                <PieChart fx:id="pieChartCartes" prefWidth="200" prefHeight="200"/>
+            </VBox>
+            <VBox alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <Label text="Pièces de Monnaie" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                <PieChart fx:id="pieChartPieces" prefWidth="200" prefHeight="200"/>
+            </VBox>
+        </GridPane>
+    </center>
 </BorderPane>

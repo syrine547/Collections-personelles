@@ -21,28 +21,27 @@ public class ServiceLivre implements IServiceLivre<Livre>, ServiceStatistique {
 
     @Override
     public boolean ajouterLivre(Livre livre) throws SQLException {
-        // Ajouter Statement.RETURN_GENERATED_KEYS pour demander les clés générées
-        PreparedStatement pre = con.prepareStatement(
-                "INSERT INTO Collections.Livres (titreLivre, auteurLivre) VALUES (?, ?)",
-                Statement.RETURN_GENERATED_KEYS
-        );
-        pre.setString(1, livre.getTitreLivre());
-        pre.setString(2, livre.getAuteurLivre());
+        String query = "INSERT INTO Collections.Livres (titreLivre, auteurLivre, quantité) VALUES (?, ?, ?)";
+        try (Connection con = DataSource.getInstance().getCon();
+             PreparedStatement pre = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-        int res = pre.executeUpdate();
-        if (res > 0) {
-            // Récupérer l'ID généré automatiquement
-            ResultSet generatedKeys = pre.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                int generatedId = generatedKeys.getInt(1); // Premier champ = l'ID généré
-                livre.setIdLivre(generatedId); // Mettre à jour l'objet Livre avec l'ID généré
-                System.out.println("Livre ajouté avec ID : " + generatedId);
+            pre.setString(1, livre.getTitreLivre());
+            pre.setString(2, livre.getAuteurLivre());
+            pre.setInt(3, livre.getQuantite());  // Ajoutez la quantité ici
+
+            int res = pre.executeUpdate();
+            if (res > 0) {
+                // Récupérer l'ID généré automatiquement
+                ResultSet generatedKeys = pre.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int generatedId = generatedKeys.getInt(1);
+                    livre.setIdLivre(generatedId);
+                }
+                return true;
             }
-            return true;
         }
         return false;
     }
-
 
     @Override
     public boolean supprimerLivre(Livre livre) throws SQLException {

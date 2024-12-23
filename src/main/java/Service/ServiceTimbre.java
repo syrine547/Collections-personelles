@@ -16,7 +16,7 @@ public class ServiceTimbre implements IServiceTimbre<Timbre>, ServiceStatistique
     public ServiceTimbre() {
         try {
             ste = con.createStatement();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
@@ -25,10 +25,11 @@ public class ServiceTimbre implements IServiceTimbre<Timbre>, ServiceStatistique
     public boolean ajouterTimbre(Timbre timbre) throws SQLException {
         // Ajouter Statement.RETURN_GENERATED_KEYS pour demander les clés générées
         PreparedStatement pre = con.prepareStatement(
-                "INSERT INTO Collections.Timbres (nomTimbre) VALUES (?)",
+                "INSERT INTO Collections.Timbres (nomTimbre, quantité) VALUES (?, ?)",
                 Statement.RETURN_GENERATED_KEYS
         );
         pre.setString(1, timbre.getNomTimbre());
+        pre.setInt(2, timbre.getQuantite()); // Inclure la quantité
 
         int res = pre.executeUpdate();
         if (res > 0) {
@@ -36,14 +37,13 @@ public class ServiceTimbre implements IServiceTimbre<Timbre>, ServiceStatistique
             ResultSet generatedKeys = pre.getGeneratedKeys();
             if (generatedKeys.next()) {
                 int generatedId = generatedKeys.getInt(1); // Premier champ = l'ID généré
-                timbre.setIdTimbre(generatedId); // Mettre à jour l'objet Livre avec l'ID généré
+                timbre.setIdTimbre(generatedId); // Mettre à jour l'objet Timbre avec l'ID généré
                 System.out.println("Timbre ajouté avec ID : " + generatedId);
             }
             return true;
         }
         return false;
     }
-
 
     @Override
     public boolean supprimerTimbre(Timbre timbre) throws SQLException {
@@ -57,10 +57,11 @@ public class ServiceTimbre implements IServiceTimbre<Timbre>, ServiceStatistique
 
     @Override
     public boolean updateTimbre(Timbre timbre) throws SQLException {
-        String req = "UPDATE Collections.Timbres SET nomTimbre = ? WHERE idTimbre = ?";
+        String req = "UPDATE Collections.Timbres SET nomTimbre = ?, quantité = ? WHERE idTimbre = ?";
         PreparedStatement pre = con.prepareStatement(req);
         pre.setString(1, timbre.getNomTimbre());
-        pre.setInt(2, timbre.getIdTimbre());
+        pre.setInt(2, timbre.getQuantite()); // Mettre à jour la quantité
+        pre.setInt(3, timbre.getIdTimbre());
 
         int res = pre.executeUpdate();
         return res > 0;
@@ -76,8 +77,9 @@ public class ServiceTimbre implements IServiceTimbre<Timbre>, ServiceStatistique
         if (resultSet.next()) {
             int idTimbre = resultSet.getInt("idTimbre");
             String nomTimbre = resultSet.getString("nomTimbre");
+            int quantite = resultSet.getInt("quantité"); // Récupérer la quantité
 
-            return new Timbre(idTimbre, nomTimbre);
+            return new Timbre(idTimbre, nomTimbre, quantite);
         }
         return null;
     }
@@ -91,14 +93,15 @@ public class ServiceTimbre implements IServiceTimbre<Timbre>, ServiceStatistique
         while (resultSet.next()) {
             int idTimbre = resultSet.getInt("idTimbre");
             String nomTimbre = resultSet.getString("nomTimbre");
+            int quantite = resultSet.getInt("quantité"); // Récupérer la quantité
 
-            Timbre timbre = new Timbre(idTimbre, nomTimbre);
+            Timbre timbre = new Timbre(idTimbre, nomTimbre, quantite);
             list.add(timbre);
         }
         return list;
     }
 
-    // Nombre total de Timbre
+    // Nombre total de Timbres
     public int getNombreTotal() throws SQLException {
         String req = "SELECT COUNT(*) AS total FROM Collections.Timbres";
         ResultSet resultSet = ste.executeQuery(req);

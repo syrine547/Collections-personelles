@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="Controllers.GestionTimbreController">
+    <children>
+        <Label text="Gérer les Timbres" layoutX="20" layoutY="20" />
+
+        <Label text="Nom:" layoutX="20" layoutY="60" />
+        <TextField fx:id="fieldNomTimbre" layoutX="100" layoutY="60" />
+
+        <Label text="Quantité:" layoutX="20" layoutY="100" />
+        <TextField fx:id="fieldQuantite" layoutX="100" layoutY="100" />
+
+        <Button text="Ajouter" layoutX="20" layoutY="160" onAction="#handleAjouterTimbre" />
+        <Button text="Modifier" layoutX="100" layoutY="160" onAction="#handleModifierTimbre" />
+        <Button text="Supprimer" layoutX="180" layoutY="160" onAction="#handleSupprimerTimbre" />
+
+        <TableView fx:id="tableTimbres" layoutX="20" layoutY="200" prefHeight="200" prefWidth="360">
+            <columns>
+                <TableColumn text="Nom" fx:id="colNomTimbre" />
+                <TableColumn text="Quantité" fx:id="colQuantite" />
+            </columns>
+        </TableView>
+    </children>
+</AnchorPane>
