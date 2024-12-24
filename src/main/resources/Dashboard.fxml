@@ -11,10 +11,7 @@
             <!-- Section gauche : noms des collections -->
             <HBox spacing="15" alignment="CENTER_LEFT">
                 <Label text="Mes Collections" style="-fx-font-size: 18px; -fx-text-fill: white; -fx-font-weight: bold;" />
-                <Button text="Livres" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#handleNavigateToLivres"/>
-                <Button text="Timbres" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#handleNavigateToTimbres"/>
-                <Button text="Cartes Postales" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#handleNavigateToCartes"/>
-                <Button text="Pièces de Monnaie" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#handleNavigateToPieces"/>
+                <ComboBox fx:id="comboBoxCollections" prefWidth="200" onAction="#handleCollectionSelection" />
             </HBox>
 
             <!-- Section droite : boutons profil et déconnexion -->

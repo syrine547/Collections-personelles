@@ -9,8 +9,11 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
+import javafx.scene.control.ComboBox;
 
 public class DashboardController {
+
+    @FXML private ComboBox<String> comboBoxCollections;
 
     @FXML private PieChart pieChartLivres;
     @FXML private PieChart pieChartPieces;
@@ -33,26 +36,34 @@ public class DashboardController {
             e.printStackTrace();
             System.err.println("Erreur lors de l'initialisation des graphiques : " + e.getMessage());
         }
+        // Initialiser la liste des collections dans la ComboBox
+        ObservableList<String> collections = FXCollections.observableArrayList(
+                "Livres", "Timbres", "Cartes Postales", "Pièces de Monnaie"
+        );
+        comboBoxCollections.setItems(collections);
     }
 
     @FXML
-    private void handleNavigateToLivres(ActionEvent event) {
-        System.out.println("Naviguer vers Livres");
-    }
-
-    @FXML
-    private void handleNavigateToTimbres(ActionEvent event) {
-        System.out.println("Naviguer vers Timbres");
-    }
-
-    @FXML
-    private void handleNavigateToCartes(ActionEvent event) {
-        System.out.println("Naviguer vers Cartes Postales");
-    }
-
-    @FXML
-    private void handleNavigateToPieces(ActionEvent event) {
-        System.out.println("Naviguer vers Pièces de Monnaie");
+    private void handleCollectionSelection(ActionEvent event) {
+        String selectedCollection = comboBoxCollections.getValue(); // Récupérer la sélection
+        if (selectedCollection != null) {
+            switch (selectedCollection) {
+                case "Livres":
+                    navigateToPage("GestionLivres.fxml");
+                    break;
+                case "Timbres":
+                    navigateToPage("GestionTimbre.fxml");
+                    break;
+                case "Cartes Postales":
+                    navigateToPage("GestionCartePostale.fxml");
+                    break;
+                case "Pièces de Monnaie":
+                    navigateToPage("GestionPieceMonnaie.fxml");
+                    break;
+                default:
+                    System.out.println("Collection inconnue : " + selectedCollection);
+            }
+        }
     }
 
     @FXML
@@ -88,6 +99,22 @@ public class DashboardController {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Erreur lors de l'affichage du PieChart pour " + nom + " : " + e.getMessage());
+        }
+    }
+
+    private void navigateToPage(String fxmlFileName) {
+        try {
+            // Charger la nouvelle scène
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/" + fxmlFileName));
+            javafx.scene.Parent root = loader.load();
+
+            // Changer la scène actuelle
+            javafx.scene.Scene currentScene = comboBoxCollections.getScene();
+            javafx.stage.Stage stage = (javafx.stage.Stage) currentScene.getWindow();
+            stage.getScene().setRoot(root);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Erreur lors de la navigation vers : " + fxmlFileName);
         }
     }
 }
