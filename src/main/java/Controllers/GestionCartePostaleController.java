@@ -1,7 +1,6 @@
 package Controllers;
 
 import Entity.CartePostale;
-import Entity.Livre;
 import Service.ServiceCartePostale;
 import Utils.DataSource;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -10,8 +9,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,16 +23,22 @@ import java.sql.Statement;
 
 public class GestionCartePostaleController {
 
+    // Champs du formulaire
     @FXML private TextField fieldTitreCartePostale;
     @FXML private TextField fieldQuantite;
 
+    // TableView et colonnes
     @FXML private TableView<CartePostale> tableCartePostale;
     @FXML private TableColumn<CartePostale, String> colTitreCartePostale;
     @FXML private TableColumn<CartePostale, Integer> colQuantite;
 
+    // Liste observable pour les cartes postales
     private ObservableList<CartePostale> cartesPostales = FXCollections.observableArrayList();
-    private ServiceCartePostale service = new ServiceCartePostale();
 
+    // Instance du service
+    private final ServiceCartePostale service = new ServiceCartePostale();
+
+    // Charger les cartes postales depuis la base de données
     private void chargerCartePostaleDepuisBD() {
         try (Connection connection = DataSource.getInstance().getCon()) {
             String query = "SELECT idCartePostale, titreCartePostale, quantité FROM CartePostale";
@@ -40,23 +50,26 @@ public class GestionCartePostaleController {
                 String titre = resultSet.getString("titreCartePostale");
                 int quantite = resultSet.getInt("quantité");
 
-                // Crée un objet Carte Postale et l'ajoute à la liste observable
+                // Crée un objet CartePostale et l'ajoute à la liste observable
                 CartePostale cartePostale = new CartePostale(id, titre, quantite);
-                cartePostale.setQuantite(quantite); // Définir la quantité si elle n'est pas dans le constructeur
                 cartesPostales.add(cartePostale);
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Affiche le stacktrace pour le débogage
+            e.printStackTrace();
             showAlert("Erreur de connexion", "Erreur SQL : " + e.getMessage());
         }
     }
 
     @FXML
     public void initialize() {
+        // Initialiser les colonnes
         colTitreCartePostale.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTitreCartePostale()));
         colQuantite.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getQuantite()).asObject());
 
+        // Charger les cartes postales existantes depuis la base de données
         chargerCartePostaleDepuisBD();
+
+        // Associer les données à la TableView
         tableCartePostale.setItems(cartesPostales);
     }
 
@@ -66,42 +79,90 @@ public class GestionCartePostaleController {
             String titre = fieldTitreCartePostale.getText();
             int quantite = Integer.parseInt(fieldQuantite.getText());
 
-            CartePostale carte = new CartePostale(0, titre, quantite);
-            service.ajouterCartePostale(carte);
-            cartesPostales.add(carte);
-            clearFields();
-        } catch (Exception e) {
-            showAlert("Erreur", "Impossible d'ajouter la carte postale !");
+            CartePostale cartePostale = new CartePostale(0, titre, quantite);
+
+            // Ajouter la carte postale dans la base de données
+            boolean isAdded = service.ajouterCartePostale(cartePostale);
+
+            if (isAdded) {
+                cartesPostales.add(cartePostale);
+                clearFields();
+                showAlert("Succès", "La carte postale a été ajoutée avec succès.");
+            } else {
+                showAlert("Erreur", "La carte postale n'a pas pu être ajoutée.");
+            }
+        } catch (NumberFormatException e) {
+            showAlert("Erreur de saisie", "Veuillez entrer une quantité valide.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert("Erreur SQL", "Erreur lors de l'ajout de la carte postale : " + e.getMessage());
         }
     }
 
     @FXML
     private void handleModifierCartePostale(ActionEvent event) {
-        CartePostale selectedCarte = tableCartePostale.getSelectionModel().getSelectedItem();
-        if (selectedCarte != null) {
+        CartePostale selectedCartePostale = tableCartePostale.getSelectionModel().getSelectedItem();
+        if (selectedCartePostale != null) {
             try {
-                selectedCarte.setTitreCartePostale(fieldTitreCartePostale.getText());
-                selectedCarte.setQuantite(Integer.parseInt(fieldQuantite.getText()));
-                service.updateCartePostale(selectedCarte);
-                tableCartePostale.refresh();
-                clearFields();
-            } catch (Exception e) {
-                showAlert("Erreur", "Impossible de modifier la carte postale !");
+                selectedCartePostale.setTitreCartePostale(fieldTitreCartePostale.getText());
+                selectedCartePostale.setQuantite(Integer.parseInt(fieldQuantite.getText()));
+
+                // Mettre à jour la carte postale dans la base de données
+                boolean isUpdated = service.updateCartePostale(selectedCartePostale);
+
+                if (isUpdated) {
+                    tableCartePostale.refresh();
+                    clearFields();
+                    showAlert("Succès", "La carte postale a été modifiée avec succès.");
+                } else {
+                    showAlert("Erreur", "La carte postale n'a pas pu être modifiée.");
+                }
+            } catch (NumberFormatException e) {
+                showAlert("Erreur de saisie", "Veuillez entrer une quantité valide.");
+            } catch (SQLException e) {
+                e.printStackTrace();
+                showAlert("Erreur SQL", "Erreur lors de la mise à jour de la carte postale : " + e.getMessage());
             }
+        } else {
+            showAlert("Aucune sélection", "Veuillez sélectionner une carte postale à modifier.");
         }
     }
 
     @FXML
     private void handleSupprimerCartePostale(ActionEvent event) {
-        CartePostale selectedCarte = tableCartePostale.getSelectionModel().getSelectedItem();
-        if (selectedCarte != null) {
+        CartePostale selectedCartePostale = tableCartePostale.getSelectionModel().getSelectedItem();
+        if (selectedCartePostale != null) {
             try {
-                service.supprimerCartePostale(selectedCarte);
-                cartesPostales.remove(selectedCarte);
-                clearFields();
-            } catch (Exception e) {
-                showAlert("Erreur", "Impossible de supprimer la carte postale !");
+                // Supprimer la carte postale de la base de données
+                boolean isDeleted = service.supprimerCartePostale(selectedCartePostale);
+
+                if (isDeleted) {
+                    cartesPostales.remove(selectedCartePostale);
+                    clearFields();
+                    showAlert("Succès", "La carte postale a été supprimée avec succès.");
+                } else {
+                    showAlert("Erreur", "La carte postale n'a pas pu être supprimée.");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                showAlert("Erreur SQL", "Erreur lors de la suppression de la carte postale : " + e.getMessage());
             }
+        } else {
+            showAlert("Aucune sélection", "Veuillez sélectionner une carte postale à supprimer.");
+        }
+    }
+
+    @FXML
+    private void handleRetourDashboard(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/Dashboard.fxml"));
+            Stage stage = (Stage) tableCartePostale.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Dashboard");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Impossible de revenir au Dashboard.");
         }
     }
 

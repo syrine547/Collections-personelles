@@ -1,6 +1,5 @@
 package Controllers;
 
-import Entity.Livre;
 import Entity.PieceMonnaie;
 import Service.ServicePieceMonnaie;
 import Utils.DataSource;
@@ -10,8 +9,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,48 +23,56 @@ import java.sql.Statement;
 
 public class GestionPieceMonnaieController {
 
+    // Champs du formulaire
     @FXML private TextField fieldValeur;
     @FXML private TextField fieldUnite;
     @FXML private TextField fieldQuantite;
 
+    // TableView et colonnes
     @FXML private TableView<PieceMonnaie> tablePieces;
     @FXML private TableColumn<PieceMonnaie, String> colValeur;
     @FXML private TableColumn<PieceMonnaie, String> colUnite;
     @FXML private TableColumn<PieceMonnaie, Integer> colQuantite;
 
+    // Liste observable pour les pièces
     private ObservableList<PieceMonnaie> pieces = FXCollections.observableArrayList();
+
+    // Instance du service
     private ServicePieceMonnaie service = new ServicePieceMonnaie();
 
-    private void chargerPieceMonnaieDepuisBD() {
+    private void chargerPiecesDepuisBD() {
         try (Connection connection = DataSource.getInstance().getCon()) {
             String query = "SELECT idPiecesMonnaie, valeurPiecesMonnaie, unitéPiecesMonnaie, quantité FROM PiecesMonnaie";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
 
             while (resultSet.next()) {
-                int id = resultSet.getInt("PiecesMonnaie");
+                int id = resultSet.getInt("idPiecesMonnaie");
                 String valeur = resultSet.getString("valeurPiecesMonnaie");
-                String unité = resultSet.getString("unitéPiecesMonnaie");
+                String unite = resultSet.getString("unitéPiecesMonnaie");
                 int quantite = resultSet.getInt("quantité");
 
-                // Crée un objet Livre et l'ajoute à la liste observable
-                PieceMonnaie pieceMonnaie = new PieceMonnaie(id, valeur, unité);
-                pieceMonnaie.setQuantite(quantite); // Définir la quantité si elle n'est pas dans le constructeur
-                pieces.add(pieceMonnaie);
+                PieceMonnaie piece = new PieceMonnaie(id, valeur, unite);
+                piece.setQuantite(quantite);
+                pieces.add(piece);
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Affiche le stacktrace pour le débogage
+            e.printStackTrace();
             showAlert("Erreur de connexion", "Erreur SQL : " + e.getMessage());
         }
     }
 
     @FXML
     public void initialize() {
+        // Initialiser les colonnes
         colValeur.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getValeurPiecesMonnaie()));
         colUnite.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getUnitéPiecesMonnaie()));
         colQuantite.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getQuantite()).asObject());
 
-        chargerPieceMonnaieDepuisBD();
+        // Charger les pièces depuis la base de données
+        chargerPiecesDepuisBD();
+
+        // Associer les données à la TableView
         tablePieces.setItems(pieces);
     }
 
@@ -71,12 +83,24 @@ public class GestionPieceMonnaieController {
             String unite = fieldUnite.getText();
             int quantite = Integer.parseInt(fieldQuantite.getText());
 
-            PieceMonnaie piece = new PieceMonnaie(0, valeur, unite, quantite);
-            service.ajouterPieceMonnaie(piece);
-            pieces.add(piece);
-            clearFields();
-        } catch (Exception e) {
-            showAlert("Erreur", "Impossible d'ajouter la pièce !");
+            PieceMonnaie piece = new PieceMonnaie(0, valeur, unite);
+            piece.setQuantite(quantite);
+
+            // Ajouter à la base de données via le service
+            boolean isAdded = service.ajouterPieceMonnaie(piece);
+
+            if (isAdded) {
+                pieces.add(piece);
+                clearFields();
+                showAlert("Succès", "La pièce a été ajoutée avec succès.");
+            } else {
+                showAlert("Erreur", "La pièce n'a pas pu être ajoutée à la base de données.");
+            }
+        } catch (NumberFormatException e) {
+            showAlert("Erreur de saisie", "Veuillez entrer des valeurs valides pour la quantité.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert("Erreur SQL", "Erreur lors de l'ajout de la pièce : " + e.getMessage());
         }
     }
 
@@ -88,12 +112,24 @@ public class GestionPieceMonnaieController {
                 selectedPiece.setValeurPiecesMonnaie(fieldValeur.getText());
                 selectedPiece.setUnitéPiecesMonnaie(fieldUnite.getText());
                 selectedPiece.setQuantite(Integer.parseInt(fieldQuantite.getText()));
-                service.updatePieceMonnaie(selectedPiece);
-                tablePieces.refresh();
-                clearFields();
-            } catch (Exception e) {
-                showAlert("Erreur", "Impossible de modifier la pièce !");
+
+                boolean isUpdated = service.updatePieceMonnaie(selectedPiece);
+
+                if (isUpdated) {
+                    tablePieces.refresh();
+                    clearFields();
+                    showAlert("Succès", "La pièce a été modifiée avec succès.");
+                } else {
+                    showAlert("Erreur", "La pièce n'a pas pu être modifiée.");
+                }
+            } catch (NumberFormatException e) {
+                showAlert("Erreur de saisie", "Veuillez entrer des valeurs valides pour la quantité.");
+            } catch (SQLException e) {
+                e.printStackTrace();
+                showAlert("Erreur SQL", "Erreur lors de la modification de la pièce : " + e.getMessage());
             }
+        } else {
+            showAlert("Aucune pièce sélectionnée", "Veuillez sélectionner une pièce à modifier.");
         }
     }
 
@@ -102,12 +138,35 @@ public class GestionPieceMonnaieController {
         PieceMonnaie selectedPiece = tablePieces.getSelectionModel().getSelectedItem();
         if (selectedPiece != null) {
             try {
-                service.supprimerPieceMonnaie(selectedPiece);
-                pieces.remove(selectedPiece);
-                clearFields();
-            } catch (Exception e) {
-                showAlert("Erreur", "Impossible de supprimer la pièce !");
+                boolean isDeleted = service.supprimerPieceMonnaie(selectedPiece);
+
+                if (isDeleted) {
+                    pieces.remove(selectedPiece);
+                    clearFields();
+                    showAlert("Succès", "La pièce a été supprimée avec succès.");
+                } else {
+                    showAlert("Erreur", "La pièce n'a pas pu être supprimée.");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                showAlert("Erreur SQL", "Erreur lors de la suppression de la pièce : " + e.getMessage());
             }
+        } else {
+            showAlert("Aucune pièce sélectionnée", "Veuillez sélectionner une pièce à supprimer.");
+        }
+    }
+
+    @FXML
+    private void handleRetourDashboard(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/Dashboard.fxml"));
+            Stage stage = (Stage) tablePieces.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Dashboard");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Impossible de revenir au Dashboard.");
         }
     }
 
@@ -118,7 +177,7 @@ public class GestionPieceMonnaieController {
     }
 
     private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);

@@ -79,7 +79,7 @@ public class GestionLivresController {
             int quantite = Integer.parseInt(fieldQuantite.getText());
 
             Livre livre = new Livre(0, titre, auteur); // Ajustez selon votre constructeur
-            livre.setQuantite(quantite); // Ajoutez la quantité
+            livre.setQuantite(quantite);
 
             // Appeler le service pour ajouter le livre dans la base de données
             ServiceLivre serviceLivre = new ServiceLivre();
@@ -133,7 +133,6 @@ public class GestionLivresController {
         }
     }
 
-
     @FXML
     private void handleSupprimerLivre(ActionEvent event) {
         Livre selectedLivre = tableLivres.getSelectionModel().getSelectedItem();
@@ -186,5 +185,4 @@ public class GestionLivresController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
 }
