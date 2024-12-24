@@ -9,11 +9,8 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.ComboBox;
 
 public class DashboardController {
-
-    @FXML private ComboBox<String> comboBoxCollections;
 
     @FXML private PieChart pieChartLivres;
     @FXML private PieChart pieChartPieces;
@@ -36,10 +33,6 @@ public class DashboardController {
             e.printStackTrace();
             System.err.println("Erreur lors de l'initialisation des graphiques : " + e.getMessage());
         }
-        // Initialiser la liste des collections dans la ComboBox
-        comboBoxCollections.getItems().addAll(
-                "Livres", "Timbres", "Cartes Postales", "Pièces de Monnaie"
-        );
     }
 
     @FXML
