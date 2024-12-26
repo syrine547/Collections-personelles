@@ -1,6 +1,7 @@
 package Controllers;
 
 import Entity.Timbre;
+import Service.ServiceLivre;
 import Service.ServiceTimbre;
 import Utils.DataSource;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -34,9 +35,6 @@ public class GestionTimbreController {
 
     // Liste observable
     private ObservableList<Timbre> timbres = FXCollections.observableArrayList();
-
-    // Instance du service
-    private ServiceTimbre service = new ServiceTimbre();
 
     private void chargerTimbresDepuisBD() {
         try (Connection connection = DataSource.getInstance().getCon()) {
@@ -80,7 +78,8 @@ public class GestionTimbreController {
             Timbre timbre = new Timbre(0, nom, quantite);
 
             // Ajouter à la base de données via le service
-            boolean isAdded = service.ajouterTimbre(timbre);
+            ServiceTimbre serviceTimbre = new ServiceTimbre();
+            boolean isAdded = serviceTimbre.ajouterTimbre(timbre);
 
             if (isAdded) {
                 timbres.add(timbre);
@@ -105,7 +104,8 @@ public class GestionTimbreController {
                 selectedTimbre.setNomTimbre(fieldNomTimbre.getText());
                 selectedTimbre.setQuantite(Integer.parseInt(fieldQuantite.getText()));
 
-                boolean isUpdated = service.updateTimbre(selectedTimbre);
+                ServiceTimbre serviceTimbre = new ServiceTimbre();
+                boolean isUpdated = serviceTimbre.updateTimbre(selectedTimbre);
 
                 if (isUpdated) {
                     tableTimbres.refresh();
@@ -130,7 +130,8 @@ public class GestionTimbreController {
         Timbre selectedTimbre = tableTimbres.getSelectionModel().getSelectedItem();
         if (selectedTimbre != null) {
             try {
-                boolean isDeleted = service.supprimerTimbre(selectedTimbre);
+                ServiceTimbre serviceTimbre = new ServiceTimbre();
+                boolean isDeleted = serviceTimbre.supprimerTimbre(selectedTimbre);
 
                 if (isDeleted) {
                     timbres.remove(selectedTimbre);

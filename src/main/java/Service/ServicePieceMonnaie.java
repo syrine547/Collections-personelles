@@ -6,6 +6,7 @@ import Entity.PieceMonnaie;
 import Utils.DataSource;
 
 import java.sql.*;
+
 public class ServicePieceMonnaie implements IServicePieceMonnaie<PieceMonnaie>, ServiceStatistique {
 
     private Connection con = DataSource.getInstance().getCon();
@@ -15,72 +16,73 @@ public class ServicePieceMonnaie implements IServicePieceMonnaie<PieceMonnaie>, 
     public ServicePieceMonnaie() {
         try {
             ste = con.createStatement();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     @Override
     public boolean ajouterPieceMonnaie(PieceMonnaie pieceMonnaie) throws SQLException {
-        // Ajouter Statement.RETURN_GENERATED_KEYS pour demander les clés générées
-        PreparedStatement pre = con.prepareStatement(
-                "INSERT INTO Collections.PiecesMonnaie (valeurPiecesMonnaie, unitéPiecesMonnaie, quantité) VALUES (?, ?, ?)",
-                Statement.RETURN_GENERATED_KEYS
-        );
-        pre.setString(1, pieceMonnaie.getValeurPiecesMonnaie());
-        pre.setString(2, pieceMonnaie.getUnitéPiecesMonnaie());
-        pre.setInt(3, pieceMonnaie.getQuantite());
+        String query = "INSERT INTO Collections.PiecesMonnaie (valeurPiecesMonnaie, unitéPiecesMonnaie, quantité) VALUES (?, ?, ?)";
+        try (Connection con = DataSource.getInstance().getCon();
+             PreparedStatement pre = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            pre.setString(1, pieceMonnaie.getValeurPiecesMonnaie());
+            pre.setString(2, pieceMonnaie.getUnitéPiecesMonnaie());
+            pre.setInt(3, pieceMonnaie.getQuantite());
 
-        int res = pre.executeUpdate();
-        if (res > 0) {
-            // Récupérer l'ID généré automatiquement
-            ResultSet generatedKeys = pre.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                int generatedId = generatedKeys.getInt(1); // Premier champ = l'ID généré
-                pieceMonnaie.setIdPiecesMonnaie(generatedId); // Mettre à jour l'objet Livre avec l'ID généré
-                System.out.println("Piece monnaie ajouté avec ID : " + generatedId);
+            int res = pre.executeUpdate();
+            if (res > 0) {
+                ResultSet generatedKeys = pre.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int generatedId = generatedKeys.getInt(1);
+                    pieceMonnaie.setIdPiecesMonnaie(generatedId);
+                    System.out.println("Pièce monnaie ajoutée avec ID : " + generatedId);
+                }
+                return true;
             }
-            return true;
         }
         return false;
     }
 
     @Override
     public boolean supprimerPieceMonnaie(PieceMonnaie pieceMonnaie) throws SQLException {
-        String req = "DELETE FROM Collections.PiecesMonnaie WHERE idPiecesMonnaie = ?";
-        PreparedStatement pre = con.prepareStatement(req);
-        pre.setInt(1, pieceMonnaie.getIdPiecesMonnaie());
-
-        int res = pre.executeUpdate();
-        return res > 0;
+        String query = "DELETE FROM Collections.PiecesMonnaie WHERE idPiecesMonnaie = ?";
+        try (PreparedStatement pre = con.prepareStatement(query)) {
+            pre.setInt(1, pieceMonnaie.getIdPiecesMonnaie());
+            int res = pre.executeUpdate();
+            return res > 0;
+        }
     }
 
     @Override
     public boolean updatePieceMonnaie(PieceMonnaie pieceMonnaie) throws SQLException {
-        String req = "UPDATE Collections.PiecesMonnaie SET valeurPiecesMonnaie = ?, unitéPiecesMonnaie = ? , quantité = ? WHERE idPiecesMonnaie = ?";
-        PreparedStatement pre = con.prepareStatement(req);
-        pre.setString(1, pieceMonnaie.getValeurPiecesMonnaie());
-        pre.setString(2, pieceMonnaie.getUnitéPiecesMonnaie());
-        pre.setInt(3, pieceMonnaie.getIdPiecesMonnaie());
+        String query = "UPDATE Collections.PiecesMonnaie SET valeurPiecesMonnaie = ?, unitéPiecesMonnaie = ?, quantité = ? WHERE idPiecesMonnaie = ?";
+        try (PreparedStatement pre = con.prepareStatement(query)) {
+            pre.setString(1, pieceMonnaie.getValeurPiecesMonnaie());
+            pre.setString(2, pieceMonnaie.getUnitéPiecesMonnaie());
+            pre.setInt(3, pieceMonnaie.getQuantite());
+            pre.setInt(4, pieceMonnaie.getIdPiecesMonnaie());
 
-        int res = pre.executeUpdate();
-        return res > 0;
+            int res = pre.executeUpdate();
+            return res > 0;
+        }
     }
 
     @Override
     public PieceMonnaie findById(int id) throws SQLException {
-        String req = "SELECT * FROM Collections.PiecesMonnaie WHERE idPiecesMonnaie = ?";
-        PreparedStatement pre = con.prepareStatement(req);
-        pre.setInt(1, id);
+        String query = "SELECT * FROM Collections.PiecesMonnaie WHERE idPiecesMonnaie = ?";
+        try (PreparedStatement pre = con.prepareStatement(query)) {
+            pre.setInt(1, id);
+            ResultSet resultSet = pre.executeQuery();
 
-        ResultSet resultSet = pre.executeQuery();
-        if (resultSet.next()) {
-            int idPiecesMonnaie = resultSet.getInt("idPiecesMonnaie");
-            String valeurPiecesMonnaie = resultSet.getString("valeurPiecesMonnaie");
-            String unitéPiecesMonnaie = resultSet.getString("unitéPiecesMonnaie");
+            if (resultSet.next()) {
+                int idPiecesMonnaie = resultSet.getInt("idPiecesMonnaie");
+                String valeurPiecesMonnaie = resultSet.getString("valeurPiecesMonnaie");
+                String unitéPiecesMonnaie = resultSet.getString("unitéPiecesMonnaie");
+                int quantite = resultSet.getInt("quantité");
 
-
-            return new PieceMonnaie(idPiecesMonnaie, valeurPiecesMonnaie, unitéPiecesMonnaie);
+                return new PieceMonnaie(idPiecesMonnaie, valeurPiecesMonnaie, unitéPiecesMonnaie, quantite);
+            }
         }
         return null;
     }
@@ -88,26 +90,28 @@ public class ServicePieceMonnaie implements IServicePieceMonnaie<PieceMonnaie>, 
     @Override
     public List<PieceMonnaie> readALL() throws SQLException {
         List<PieceMonnaie> list = new ArrayList<>();
-        String req = "SELECT * FROM Collections.PiecesMonnaie";
+        String query = "SELECT * FROM Collections.PiecesMonnaie";
+        try (ResultSet resultSet = ste.executeQuery(query)) {
+            while (resultSet.next()) {
+                int idPiecesMonnaie = resultSet.getInt("idPiecesMonnaie");
+                String valeurPiecesMonnaie = resultSet.getString("valeurPiecesMonnaie");
+                String unitéPiecesMonnaie = resultSet.getString("unitéPiecesMonnaie");
+                int quantite = resultSet.getInt("quantité");
 
-        ResultSet resultSet = ste.executeQuery(req);
-        while (resultSet.next()) {
-            int idPiecesMonnaie = resultSet.getInt("idPiecesMonnaie");
-            String valeurPiecesMonnaie = resultSet.getString("valeurPiecesMonnaie");
-            String unitéPiecesMonnaie = resultSet.getString("unitéPiecesMonnaie");
-
-            PieceMonnaie pieceMonnaie = new PieceMonnaie(idPiecesMonnaie, valeurPiecesMonnaie, unitéPiecesMonnaie);
-            list.add(pieceMonnaie);
+                PieceMonnaie pieceMonnaie = new PieceMonnaie(idPiecesMonnaie, valeurPiecesMonnaie, unitéPiecesMonnaie, quantite);
+                list.add(pieceMonnaie);
+            }
         }
         return list;
     }
 
-    // Nombre total de Pieces Monnaie
+    @Override
     public int getNombreTotal() throws SQLException {
-        String req = "SELECT COUNT(*) AS total FROM Collections.PiecesMonnaie";
-        ResultSet resultSet = ste.executeQuery(req);
-        if (resultSet.next()) {
-            return resultSet.getInt("total");
+        String query = "SELECT COUNT(*) AS total FROM Collections.PiecesMonnaie";
+        try (ResultSet resultSet = ste.executeQuery(query)) {
+            if (resultSet.next()) {
+                return resultSet.getInt("total");
+            }
         }
         return 0;
     }

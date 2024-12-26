@@ -56,11 +56,12 @@ public class ServiceLivre implements IServiceLivre<Livre>, ServiceStatistique {
 
     @Override
     public boolean updateLivre(Livre livre) throws SQLException {
-        String req = "UPDATE Collections.Livres SET titreLivre = ?, auteurLivre = ? WHERE idLivre = ?";
+        String req = "UPDATE Collections.Livres SET titreLivre = ?, auteurLivre = ?, quantité = ? WHERE idLivre = ?";
         PreparedStatement pre = con.prepareStatement(req);
         pre.setString(1, livre.getTitreLivre());
         pre.setString(2, livre.getAuteurLivre());
-        pre.setInt(3, livre.getIdLivre());
+        pre.setInt(3, livre.getQuantite());
+        pre.setInt(4, livre.getIdLivre());
 
         int res = pre.executeUpdate();
         return res > 0;
@@ -77,8 +78,9 @@ public class ServiceLivre implements IServiceLivre<Livre>, ServiceStatistique {
             int idLivre = resultSet.getInt("idLivre");
             String titreLivre = resultSet.getString("titreLivre");
             String auteurLivre = resultSet.getString("auteurLivre");
+            int quantite = resultSet.getInt("quantité");
 
-            return new Livre(idLivre, titreLivre, auteurLivre);
+            return new Livre(idLivre, titreLivre, auteurLivre, quantite);
         }
         return null;
     }
@@ -93,8 +95,9 @@ public class ServiceLivre implements IServiceLivre<Livre>, ServiceStatistique {
             int idLivre = resultSet.getInt("idLivre");
             String titreLivre = resultSet.getString("titreLivre");
             String auteurLivre = resultSet.getString("auteurLivre");
+            int quantite = resultSet.getInt("quantite");
 
-            Livre livre = new Livre(idLivre, titreLivre, auteurLivre);
+            Livre livre = new Livre(idLivre, titreLivre, auteurLivre, quantite);
             list.add(livre);
         }
         return list;

@@ -12,24 +12,26 @@ nomTimbre VARCHAR(50)
 );
 
 CREATE table Collections.CartePostale (
-idCartePostale int primary key AUTO_INCREMENT,
+idCartePostale int primary key not null AUTO_INCREMENT,
 titreCartePostale varchar(50)
 );
 
 CREATE TABLE Collections.PiecesMonnaie (
-idPiecesMonnaie INT PRIMARY KEY NOT NULL,
+idPiecesMonnaie INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 valeurPiecesMonnaie VARCHAR(50),
 unitéPiecesMonnaie VARCHAR(50)
 );
 
-ALTER TABLE Collections.Livres ADD nbLivresEstimee DOUBLE DEFAULT 0.0;
-ALTER TABLE Collections.Timbres ADD nbTimbresEstimee DOUBLE DEFAULT 0.0;
-ALTER TABLE Collections.PiecesMonnaie ADD nbPiecesMonnaieEstimee DOUBLE DEFAULT 0.0;
-ALTER TABLE Collections.CartePostale ADD nbCartesPostaleEstimee DOUBLE DEFAULT 0.0;
+ALTER TABLE Collections.Livres ADD quantité INT DEFAULT 1;
+ALTER TABLE Collections.Timbres ADD quantité INT DEFAULT 1;
+ALTER TABLE Collections.PiecesMonnaie ADD quantité INT DEFAULT 1;
+ALTER TABLE Collections.CartePostale ADD quantité INT DEFAULT 1;
 
-TRUNCATE TABLE Collections.Livres;
+/*TRUNCATE TABLE Collections.Livres;*/
 
 select * from Collections.Livres;
 select * from Collections.Timbres;
 select * from Collections.CartePostale;
 select * from Collections.PiecesMonnaie;
+
+describe Collections.CartePostale;

@@ -2,6 +2,7 @@ package Controllers;
 
 import Entity.CartePostale;
 import Service.ServiceCartePostale;
+import Service.ServicePieceMonnaie;
 import Utils.DataSource;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -34,9 +35,6 @@ public class GestionCartePostaleController {
 
     // Liste observable pour les cartes postales
     private ObservableList<CartePostale> cartesPostales = FXCollections.observableArrayList();
-
-    // Instance du service
-    private final ServiceCartePostale service = new ServiceCartePostale();
 
     // Charger les cartes postales depuis la base de données
     private void chargerCartePostaleDepuisBD() {
@@ -82,7 +80,8 @@ public class GestionCartePostaleController {
             CartePostale cartePostale = new CartePostale(0, titre, quantite);
 
             // Ajouter la carte postale dans la base de données
-            boolean isAdded = service.ajouterCartePostale(cartePostale);
+            ServiceCartePostale serviceCartePostale = new ServiceCartePostale();
+            boolean isAdded = serviceCartePostale.ajouterCartePostale(cartePostale);
 
             if (isAdded) {
                 cartesPostales.add(cartePostale);
@@ -108,7 +107,8 @@ public class GestionCartePostaleController {
                 selectedCartePostale.setQuantite(Integer.parseInt(fieldQuantite.getText()));
 
                 // Mettre à jour la carte postale dans la base de données
-                boolean isUpdated = service.updateCartePostale(selectedCartePostale);
+                ServiceCartePostale serviceCartePostale = new ServiceCartePostale();
+                boolean isUpdated = serviceCartePostale.updateCartePostale(selectedCartePostale);
 
                 if (isUpdated) {
                     tableCartePostale.refresh();
@@ -134,7 +134,8 @@ public class GestionCartePostaleController {
         if (selectedCartePostale != null) {
             try {
                 // Supprimer la carte postale de la base de données
-                boolean isDeleted = service.supprimerCartePostale(selectedCartePostale);
+                ServiceCartePostale serviceCartePostale = new ServiceCartePostale();
+                boolean isDeleted = serviceCartePostale.supprimerCartePostale(selectedCartePostale);
 
                 if (isDeleted) {
                     cartesPostales.remove(selectedCartePostale);

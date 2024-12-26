@@ -7,78 +7,80 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServiceCartePostale implements IServiceCartePostale <CartePostale>, ServiceStatistique {
+public class ServiceCartePostale implements IServiceCartePostale<CartePostale>, ServiceStatistique {
 
-    private Connection con = DataSource.getInstance().getCon();
+    private final Connection con = DataSource.getInstance().getCon();
     private Statement ste = null;
     private static final int OBJECTIF_TOTAL = 70;
 
     public ServiceCartePostale() {
         try {
             ste = con.createStatement();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     @Override
     public boolean ajouterCartePostale(CartePostale cartePostale) throws SQLException {
-        // Ajouter Statement.RETURN_GENERATED_KEYS pour demander les clés générées
-        PreparedStatement pre = con.prepareStatement(
-                "INSERT INTO Collections.CartePostale (titreCartePostale) VALUES (?)",
-                Statement.RETURN_GENERATED_KEYS
-        );
-        pre.setString(1, cartePostale.getTitreCartePostale());
+        String query = "INSERT INTO Collections.CartePostale (titreCartePostale, quantité) VALUES (?, ?)";
+        try (Connection con = DataSource.getInstance().getCon();
+             PreparedStatement pre = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            pre.setString(1, cartePostale.getTitreCartePostale());
+            pre.setInt(2, cartePostale.getQuantite()); // Gestion de la quantité
 
-        int res = pre.executeUpdate();
-        if (res > 0) {
-            // Récupérer l'ID généré automatiquement
-            ResultSet generatedKeys = pre.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                int generatedId = generatedKeys.getInt(1); // Premier champ = l'ID généré
-                cartePostale.setIdCartePostale(generatedId); // Mettre à jour l'objet Livre avec l'ID généré
-                System.out.println("Carte postale ajouté avec ID : " + generatedId);
+            int res = pre.executeUpdate();
+            if (res > 0) {
+                // Récupérer l'ID généré automatiquement
+                ResultSet generatedKeys = pre.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int generatedId = generatedKeys.getInt(1);
+                    cartePostale.setIdCartePostale(generatedId);
+                    System.out.println("Carte postale ajoutée avec ID : " + generatedId);
+                }
+                return true;
             }
-            return true;
         }
         return false;
     }
 
-
     @Override
     public boolean supprimerCartePostale(CartePostale cartePostale) throws SQLException {
-        String req = "DELETE FROM Collections.CartePostale WHERE idCartePostale = ?";
-        PreparedStatement pre = con.prepareStatement(req);
-        pre.setInt(1, cartePostale.getIdCartePostale());
-
-        int res = pre.executeUpdate();
-        return res > 0;
+        String query = "DELETE FROM Collections.CartePostale WHERE idCartePostale = ?";
+        try (PreparedStatement pre = con.prepareStatement(query)) {
+            pre.setInt(1, cartePostale.getIdCartePostale());
+            int res = pre.executeUpdate();
+            return res > 0;
+        }
     }
 
     @Override
     public boolean updateCartePostale(CartePostale cartePostale) throws SQLException {
-        String req = "UPDATE Collections.CartePostale SET titreCartePostale = ? WHERE idCartePostale = ?";
-        PreparedStatement pre = con.prepareStatement(req);
-        pre.setString(1, cartePostale.getTitreCartePostale());
-        pre.setInt(2, cartePostale.getIdCartePostale());
+        String query = "UPDATE Collections.CartePostale SET titreCartePostale = ?, quantité = ? WHERE idCartePostale = ?";
+        try (PreparedStatement pre = con.prepareStatement(query)) {
+            pre.setString(1, cartePostale.getTitreCartePostale());
+            pre.setInt(2, cartePostale.getQuantite()); // Mise à jour de la quantité
+            pre.setInt(3, cartePostale.getIdCartePostale());
 
-        int res = pre.executeUpdate();
-        return res > 0;
+            int res = pre.executeUpdate();
+            return res > 0;
+        }
     }
 
     @Override
     public CartePostale findById(int id) throws SQLException {
-        String req = "SELECT * FROM Collections.CartePostale WHERE idCartePostale = ?";
-        PreparedStatement pre = con.prepareStatement(req);
-        pre.setInt(1, id);
+        String query = "SELECT * FROM Collections.CartePostale WHERE idCartePostale = ?";
+        try (PreparedStatement pre = con.prepareStatement(query)) {
+            pre.setInt(1, id);
 
-        ResultSet resultSet = pre.executeQuery();
-        if (resultSet.next()) {
-            int idCartePostale = resultSet.getInt("idCartePostale");
-            String titreCartePostale = resultSet.getString("titreCartePostale");
-            int quantite = resultSet.getInt("quantite");
+            ResultSet resultSet = pre.executeQuery();
+            if (resultSet.next()) {
+                int idCartePostale = resultSet.getInt("idCartePostale");
+                String titreCartePostale = resultSet.getString("titreCartePostale");
+                int quantite = resultSet.getInt("quantite");
 
-            return new CartePostale(idCartePostale, titreCartePostale, quantite);
+                return new CartePostale(idCartePostale, titreCartePostale, quantite);
+            }
         }
         return null;
     }
@@ -86,26 +88,28 @@ public class ServiceCartePostale implements IServiceCartePostale <CartePostale>,
     @Override
     public List<CartePostale> readALL() throws SQLException {
         List<CartePostale> list = new ArrayList<>();
-        String req = "SELECT * FROM Collections.CartePostale";
+        String query = "SELECT * FROM Collections.CartePostale";
 
-        ResultSet resultSet = ste.executeQuery(req);
-        while (resultSet.next()) {
-            int idCartePostale = resultSet.getInt("idCartePostale");
-            String titreCartePostale = resultSet.getString("titreCartePostale");
-            int quantite = resultSet.getInt("quantite");
+        try (ResultSet resultSet = ste.executeQuery(query)) {
+            while (resultSet.next()) {
+                int idCartePostale = resultSet.getInt("idCartePostale");
+                String titreCartePostale = resultSet.getString("titreCartePostale");
+                int quantite = resultSet.getInt("quantite");
 
-            CartePostale cartePostale = new CartePostale(idCartePostale, titreCartePostale, quantite);
-            list.add(cartePostale);
+                CartePostale cartePostale = new CartePostale(idCartePostale, titreCartePostale, quantite);
+                list.add(cartePostale);
+            }
         }
         return list;
     }
 
-    // Nombre total de Cartes Postale
+    @Override
     public int getNombreTotal() throws SQLException {
-        String req = "SELECT COUNT(*) AS total FROM Collections.CartePostale";
-        ResultSet resultSet = ste.executeQuery(req);
-        if (resultSet.next()) {
-            return resultSet.getInt("total");
+        String query = "SELECT COUNT(*) AS total FROM Collections.CartePostale";
+        try (ResultSet resultSet = ste.executeQuery(query)) {
+            if (resultSet.next()) {
+                return resultSet.getInt("total");
+            }
         }
         return 0;
     }

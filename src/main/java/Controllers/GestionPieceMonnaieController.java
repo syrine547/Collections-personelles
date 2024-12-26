@@ -2,6 +2,7 @@ package Controllers;
 
 import Entity.PieceMonnaie;
 import Service.ServicePieceMonnaie;
+import Service.ServiceTimbre;
 import Utils.DataSource;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -36,9 +37,6 @@ public class GestionPieceMonnaieController {
 
     // Liste observable pour les pièces
     private ObservableList<PieceMonnaie> pieces = FXCollections.observableArrayList();
-
-    // Instance du service
-    private ServicePieceMonnaie service = new ServicePieceMonnaie();
 
     private void chargerPiecesDepuisBD() {
         try (Connection connection = DataSource.getInstance().getCon()) {
@@ -87,7 +85,8 @@ public class GestionPieceMonnaieController {
             piece.setQuantite(quantite);
 
             // Ajouter à la base de données via le service
-            boolean isAdded = service.ajouterPieceMonnaie(piece);
+            ServicePieceMonnaie servicePieceMonnaie = new ServicePieceMonnaie();
+            boolean isAdded = servicePieceMonnaie.ajouterPieceMonnaie(piece);
 
             if (isAdded) {
                 pieces.add(piece);
@@ -113,7 +112,8 @@ public class GestionPieceMonnaieController {
                 selectedPiece.setUnitéPiecesMonnaie(fieldUnite.getText());
                 selectedPiece.setQuantite(Integer.parseInt(fieldQuantite.getText()));
 
-                boolean isUpdated = service.updatePieceMonnaie(selectedPiece);
+                ServicePieceMonnaie servicePieceMonnaie = new ServicePieceMonnaie();
+                boolean isUpdated = servicePieceMonnaie.updatePieceMonnaie(selectedPiece);
 
                 if (isUpdated) {
                     tablePieces.refresh();
@@ -138,7 +138,8 @@ public class GestionPieceMonnaieController {
         PieceMonnaie selectedPiece = tablePieces.getSelectionModel().getSelectedItem();
         if (selectedPiece != null) {
             try {
-                boolean isDeleted = service.supprimerPieceMonnaie(selectedPiece);
+                ServicePieceMonnaie servicePieceMonnaie = new ServicePieceMonnaie();
+                boolean isDeleted = servicePieceMonnaie.supprimerPieceMonnaie(selectedPiece);
 
                 if (isDeleted) {
                     pieces.remove(selectedPiece);

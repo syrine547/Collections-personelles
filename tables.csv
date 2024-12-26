@@ -1,0 +1,5 @@
+Field,Type,Null,Key,Default,Extra
+idLIvre,int,NO,PRI,NULL,auto_increment
+titreLivre,varchar(50),YES,,NULL,
+auteurLivre,varchar(50),YES,,NULL,
+quantité,int,YES,,1,
