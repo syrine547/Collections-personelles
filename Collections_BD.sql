@@ -1,5 +1,10 @@
 CREATE DATABASE Collections;
 
+CREATE TABLE Collections.typesExistants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nomType VARCHAR(255) NOT NULL UNIQUE
+);
+
 CREATE TABLE Collections.Livres (
 idLIvre INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 titreLivre VARCHAR(50),
@@ -29,9 +34,11 @@ ALTER TABLE Collections.CartePostale ADD quantité INT DEFAULT 1;
 
 /*TRUNCATE TABLE Collections.Livres;*/
 
+select * from Collections.typesExistants;
 select * from Collections.Livres;
 select * from Collections.Timbres;
 select * from Collections.CartePostale;
 select * from Collections.PiecesMonnaie;
+
 
 describe Collections.CartePostale;

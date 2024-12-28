@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="Controllers.AjouterNouveauTypeController" spacing="15" alignment="CENTER"
+      style="-fx-padding: 20; -fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-radius: 5;">
+    <Label text="Ajouter un nouvel élément" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+    <ComboBox fx:id="comboBoxType" promptText="Type d'élément" prefWidth="250" />
+    <TextField fx:id="fieldNom" promptText="Nom de l'élément" prefWidth="250" />
+    <TextField fx:id="fieldQuantite" promptText="Quantité" prefWidth="250" />
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Ajouter" style="-fx-background-color: #2ecc71; -fx-text-fill: white;" onAction="#handleAjouter"/>
+        <Button text="Annuler" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#handleAnnuler"/>
+    </HBox>
+</VBox>
