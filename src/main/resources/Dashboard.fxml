@@ -7,17 +7,17 @@
 <BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.DashboardController">
     <!-- Barre de navigation supérieure -->
     <top>
-        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #2c3e50; -fx-border-color: black;">
+        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #34495e; -fx-border-color: black;">
             <!-- Section gauche : noms des collections -->
             <HBox spacing="15" alignment="CENTER_LEFT">
-                <Label text="Mes Collections" style="-fx-font-size: 18px; -fx-text-fill: white; -fx-font-weight: bold;" />
-                <ComboBox fx:id="comboBoxCollections" prefWidth="200" onAction="#handleCollectionSelection" />
+                <Label text="Mes Collections" style="-fx-font-size: 18px; -fx-text-fill: #ecf0f1; -fx-font-weight: bold;" />
+                <ComboBox fx:id="comboBoxCollections" prefWidth="200" onAction="#handleCollectionSelection" style="-fx-background-color: #ecf0f1;" />
             </HBox>
 
             <!-- Section droite : boutons profil et déconnexion -->
             <HBox spacing="10" alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
                 <Pane HBox.hgrow="ALWAYS"/> <!-- Espace flexible pour aligner les boutons à droite -->
-                <Button text="Profil" style="-fx-background-color: #1abc9c; -fx-text-fill: white;" onAction="#handleNavigateToProfil"/>
+                <Button text="Profil" style="-fx-background-color: #27ae60; -fx-text-fill: white;" onAction="#handleNavigateToProfil"/>
                 <Button text="Déconnexion" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#handleLogout"/>
             </HBox>
         </HBox>
@@ -25,7 +25,7 @@
 
     <!-- Contenu principal -->
     <center>
-        <GridPane fx:id="gridPaneCharts" prefWidth="800" prefHeight="600" hgap="20" vgap="20" alignment="CENTER">
+        <GridPane fx:id="gridPaneCharts" prefWidth="900" prefHeight="600" hgap="20" vgap="20" alignment="CENTER" style="-fx-background-color: #ecf0f1; -fx-padding: 20;">
             <!-- Configurer les colonnes pour une disposition 3x2 -->
             <columnConstraints>
                 <ColumnConstraints percentWidth="33.3"/>
@@ -37,20 +37,20 @@
                 <RowConstraints percentHeight="50"/>
             </rowConstraints>
 
-            <!-- Charts comme précédemment -->
-            <VBox alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <!-- Charts -->
+            <VBox alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-background-color: #bdc3c7; -fx-padding: 10; -fx-border-color: #2c3e50; -fx-border-width: 1;">
                 <Label text="Livres" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
                 <PieChart fx:id="pieChartLivres" prefWidth="200" prefHeight="200"/>
             </VBox>
-            <VBox alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <VBox alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="0" style="-fx-background-color: #bdc3c7; -fx-padding: 10; -fx-border-color: #2c3e50; -fx-border-width: 1;">
                 <Label text="Timbres" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
                 <PieChart fx:id="pieChartTimbres" prefWidth="200" prefHeight="200"/>
             </VBox>
-            <VBox alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            <VBox alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="0" style="-fx-background-color: #bdc3c7; -fx-padding: 10; -fx-border-color: #2c3e50; -fx-border-width: 1;">
                 <Label text="Cartes Postales" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
                 <PieChart fx:id="pieChartCartes" prefWidth="200" prefHeight="200"/>
             </VBox>
-            <VBox alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="1">
+            <VBox alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-background-color: #bdc3c7; -fx-padding: 10; -fx-border-color: #2c3e50; -fx-border-width: 1;">
                 <Label text="Pièces de Monnaie" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
                 <PieChart fx:id="pieChartPieces" prefWidth="200" prefHeight="200"/>
             </VBox>

@@ -4,37 +4,37 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="Controllers.GestionTimbreController">
+            fx:controller="Controllers.GestionTimbreController" style="-fx-background-color: #ecf0f1;">
 
     <!-- Partie haute : Champs pour ajouter/modifier un timbre -->
     <top>
-        <VBox spacing="10" alignment="CENTER">
+        <VBox spacing="15" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #34495e;">
             <HBox spacing="10" alignment="CENTER">
-                <TextField fx:id="fieldNomTimbre" promptText="Nom du Timbre" />
-                <TextField fx:id="fieldQuantite" promptText="Quantité" />
+                <TextField fx:id="fieldNomTimbre" promptText="Nom du Timbre" style="-fx-pref-width: 200; -fx-background-color: #bdc3c7;" />
+                <TextField fx:id="fieldQuantite" promptText="Quantité" style="-fx-pref-width: 100; -fx-background-color: #bdc3c7;" />
             </HBox>
             <HBox spacing="10" alignment="CENTER">
-                <Button text="Ajouter" onAction="#handleAjouterTimbre" />
-                <Button text="Modifier" onAction="#handleModifierTimbre" />
-                <Button text="Supprimer" onAction="#handleSupprimerTimbre" />
+                <Button text="Ajouter" style="-fx-background-color: #27ae60; -fx-text-fill: white;" onAction="#handleAjouterTimbre" />
+                <Button text="Modifier" style="-fx-background-color: #f39c12; -fx-text-fill: white;" onAction="#handleModifierTimbre" />
+                <Button text="Supprimer" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#handleSupprimerTimbre" />
             </HBox>
         </VBox>
     </top>
 
     <!-- Partie centrale : TableView pour afficher les timbres -->
     <center>
-        <TableView fx:id="tableTimbres" prefHeight="400">
+        <TableView fx:id="tableTimbres" prefHeight="400" prefWidth="900" style="-fx-background-color: white;">
             <columns>
-                <TableColumn fx:id="colNomTimbre" text="Nom" prefWidth="200" />
-                <TableColumn fx:id="colQuantite" text="Quantité" prefWidth="200" />
+                <TableColumn fx:id="colNomTimbre" text="Nom" prefWidth="450" />
+                <TableColumn fx:id="colQuantite" text="Quantité" prefWidth="450" />
             </columns>
         </TableView>
     </center>
 
     <!-- Partie basse : Bouton pour revenir au tableau de bord -->
     <bottom>
-        <HBox alignment="CENTER">
-            <Button text="Retour au Dashboard" onAction="#handleRetourDashboard" />
+        <HBox alignment="CENTER" style="-fx-padding: 10;">
+            <Button text="Retour au Dashboard" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#handleRetourDashboard" />
         </HBox>
     </bottom>
 </BorderPane>

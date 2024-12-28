@@ -4,39 +4,39 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="Controllers.GestionPieceMonnaieController">
+            fx:controller="Controllers.GestionPieceMonnaieController" style="-fx-background-color: #ecf0f1;">
 
     <!-- Partie haute : Champs pour ajouter/modifier une pièce de monnaie -->
     <top>
-        <VBox spacing="10" alignment="CENTER">
+        <VBox spacing="15" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #34495e;">
             <HBox spacing="10" alignment="CENTER">
-                <TextField fx:id="fieldValeur" promptText="Valeur" />
-                <TextField fx:id="fieldUnite" promptText="Unité" />
-                <TextField fx:id="fieldQuantite" promptText="Quantité" />
+                <TextField fx:id="fieldValeur" promptText="Valeur" style="-fx-pref-width: 150; -fx-background-color: #bdc3c7;" />
+                <TextField fx:id="fieldUnite" promptText="Unité" style="-fx-pref-width: 150; -fx-background-color: #bdc3c7;" />
+                <TextField fx:id="fieldQuantite" promptText="Quantité" style="-fx-pref-width: 100; -fx-background-color: #bdc3c7;" />
             </HBox>
             <HBox spacing="10" alignment="CENTER">
-                <Button text="Ajouter" onAction="#handleAjouterPiece" />
-                <Button text="Modifier" onAction="#handleModifierPiece" />
-                <Button text="Supprimer" onAction="#handleSupprimerPiece" />
+                <Button text="Ajouter" style="-fx-background-color: #27ae60; -fx-text-fill: white;" onAction="#handleAjouterPiece" />
+                <Button text="Modifier" style="-fx-background-color: #f39c12; -fx-text-fill: white;" onAction="#handleModifierPiece" />
+                <Button text="Supprimer" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#handleSupprimerPiece" />
             </HBox>
         </VBox>
     </top>
 
     <!-- Partie centrale : TableView pour afficher les pièces -->
     <center>
-        <TableView fx:id="tablePieces" prefHeight="400">
+        <TableView fx:id="tablePieces" prefHeight="400" prefWidth="900" style="-fx-background-color: white;">
             <columns>
-                <TableColumn fx:id="colValeur" text="Valeur" prefWidth="150" />
-                <TableColumn fx:id="colUnite" text="Unité" prefWidth="150" />
-                <TableColumn fx:id="colQuantite" text="Quantité" prefWidth="100" />
+                <TableColumn fx:id="colValeur" text="Valeur" prefWidth="300" />
+                <TableColumn fx:id="colUnite" text="Unité" prefWidth="300" />
+                <TableColumn fx:id="colQuantite" text="Quantité" prefWidth="300" />
             </columns>
         </TableView>
     </center>
 
     <!-- Partie basse : Bouton pour revenir au tableau de bord -->
     <bottom>
-        <HBox alignment="CENTER">
-            <Button text="Retour au Dashboard" onAction="#handleRetourDashboard" />
+        <HBox alignment="CENTER" style="-fx-padding: 10;">
+            <Button text="Retour au Dashboard" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#handleRetourDashboard" />
         </HBox>
     </bottom>
 </BorderPane>
