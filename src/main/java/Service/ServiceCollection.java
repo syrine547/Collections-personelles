@@ -3,6 +3,8 @@ package Service;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import Utils.DataSource;
 
@@ -74,14 +76,24 @@ public class ServiceCollection<T> {
         }
     }
 
-    public List<T> readAll() throws SQLException {
-        List<T> list = new ArrayList<>();
-        String query = "SELECT * FROM Collections." + nomTable;
+    public List<Map<String, Object>> readAll() throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String query = "SELECT * FROM Collections.`" + nomTable + "`"; // Utilisation de backticks
 
-        try (ResultSet resultSet = ste.executeQuery(query)) {
-            while (resultSet.next()) {
-                // Remplir cette partie avec une logique pour mapper les résultats
-                // Cela dépend de la structure des données de vos collections
+        try (Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    String columnName = metaData.getColumnName(i);
+                    Object columnValue = rs.getObject(i);
+                    row.put(columnName, columnValue);
+                }
+                list.add(row);
             }
         }
         return list;

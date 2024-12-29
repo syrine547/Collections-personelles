@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="Controllers.GestionCollectionController" style="-fx-background-color: #ecf0f1;">
+    <!-- Partie haute : Champs dynamiques pour ajouter/modifier un élément -->
+    <top>
+        <VBox fx:id="vboxChamps" spacing="15" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #34495e;">
+            <!-- Les champs seront ajoutés dynamiquement ici -->
+        </VBox>
+    </top>
+
+    <!-- Partie centrale : TableView pour afficher les éléments -->
+    <center>
+        <TableView fx:id="tableElements" prefHeight="400" prefWidth="900" style="-fx-background-color: white;">
+            <!-- Les colonnes seront ajoutées dynamiquement -->
+        </TableView>
+    </center>
+
+    <!-- Partie basse : Bouton pour revenir au tableau de bord -->
+    <bottom>
+        <HBox alignment="CENTER" style="-fx-padding: 10;">
+            <Button text="Retour au Dashboard" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#handleRetourDashboard" />
+        </HBox>
+    </bottom>
+</BorderPane>
+
