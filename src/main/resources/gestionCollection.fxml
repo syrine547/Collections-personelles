@@ -5,11 +5,6 @@
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="Controllers.GenericCollectionController" style="-fx-background-color: #ecf0f1;">
-    <top>
-        <VBox fx:id="vboxChamps" spacing="15" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #34495e;">
-            <!-- Les champs dynamiques seront ajoutés ici -->
-        </VBox>
-    </top>
     <center>
         <TableView fx:id="tableElements" prefHeight="400" prefWidth="900" style="-fx-background-color: white;">
             <!-- Les colonnes dynamiques seront ajoutées ici -->

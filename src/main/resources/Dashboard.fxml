@@ -28,10 +28,7 @@
     <center>
         <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-padding: 10;">
             <VBox fx:id="vBoxCharts" spacing="20" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #ecf0f1;"
-                  prefWidth="600" prefHeight="400" maxWidth="800" maxHeight="600">
-                <ListView fx:id="listeCollections" prefWidth="400" prefHeight="200" />
-                <PieChart fx:id="chart1" prefWidth="400" prefHeight="300" />
-                <PieChart fx:id="chart2" prefWidth="400" prefHeight="300" />
+                  prefWidth="600" prefHeight="600" maxWidth="800" maxHeight="600">
             </VBox>
         </ScrollPane>
     </center>

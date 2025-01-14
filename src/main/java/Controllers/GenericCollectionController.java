@@ -21,8 +21,6 @@ import java.util.List;
 public class GenericCollectionController {
 
     @FXML
-    private VBox vboxChamps; // Pour les champs dynamiques
-    @FXML
     private TableView<Map<String, Object>> tableElements; // Pour afficher les données
 
     private String nomCollection;
@@ -38,15 +36,6 @@ public class GenericCollectionController {
             List<String> attributs = service.getAttributs();
 
             // Ajouter des champs dynamiques pour chaque attribut
-            vboxChamps.getChildren().clear(); // Nettoyer les champs existants
-            for (String attribut : attributs) {
-                Label label = new Label(attribut + ":");
-                TextField textField = new TextField();
-                textField.setId(attribut); // Utilisé pour identifier chaque champ
-                vboxChamps.getChildren().addAll(label, textField);
-            }
-
-            // Configurer dynamiquement le tableau
             tableElements.getColumns().clear();
             for (String attribut : attributs) {
                 TableColumn<Map<String, Object>, String> column = new TableColumn<>(attribut);
@@ -60,7 +49,6 @@ public class GenericCollectionController {
             tableElements.getItems().clear();
             List<Map<String, Object>> data = service.readAll();
             tableElements.getItems().addAll(data);
-
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert("Erreur", "Erreur lors de l'initialisation de la collection : " + e.getMessage());

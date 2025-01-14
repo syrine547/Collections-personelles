@@ -1,6 +1,5 @@
 package Controllers;
 
-import Service.*;
 import Utils.DataSource;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -21,8 +20,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
-import java.util.List;
 import java.sql.PreparedStatement;
 import javafx.scene.control.ListView;
 
@@ -32,41 +29,27 @@ public class DashboardController {
     private ComboBox<String> comboBoxCollections;
     @FXML
     private VBox vBoxCharts;
-    @FXML
-    private ListView<String> listeCollections;
 
     @FXML
     public void initialize() {
         try {
-            chargerListeCollections();
-
+            // Charger les collections dynamiques
             ObservableList<String> collectionsDynamiques = getDynamicCollections();
 
-            // Ajout des PieCharts pour chaque collection dynamique
+            // Remplir la ComboBox avec les collections dynamiques
+            comboBoxCollections.setItems(collectionsDynamiques);
+
+            // Charger les PieCharts pour chaque collection dynamique
             for (String collection : collectionsDynamiques) {
                 int total = getTotalForCollection(collection);
                 int objectif = getObjectifForCollection(collection);
                 ajouterPieChart(collection, total, objectif);
             }
 
-            // Remplir la ComboBox
-            comboBoxCollections.setItems(collectionsDynamiques);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Erreur", "Erreur lors de l'initialisation des graphiques : " + e.getMessage());
         }
-    }
-
-    private void chargerListeCollections() {
-        ObservableList<String> nomsCollections = getDynamicCollections();
-        listeCollections.setItems(nomsCollections);
-
-        listeCollections.setOnMouseClicked(event -> {
-            String selection = listeCollections.getSelectionModel().getSelectedItem();
-            if (selection != null) {
-                navigateToDynamicCollection(selection);
-            }
-        });
     }
 
     private ObservableList<String> getDynamicCollections() {
@@ -148,13 +131,7 @@ public class DashboardController {
         String selectedCollection = comboBoxCollections.getValue(); // Récupérer la sélection
         if (selectedCollection != null) {
             // Rechercher l'action ou la page associée à la collection dans la base de données
-            String fxmlFile = getFxmlFileForCollection(selectedCollection);
-
-            if (fxmlFile != null && !fxmlFile.isEmpty()) {
-                navigateToPage(fxmlFile);
-            } else {
-                System.out.println("Aucune page FXML associée à la collection : " + selectedCollection);
-            }
+            navigateToDynamicCollection(selectedCollection);
         } else {
             System.out.println("Aucune collection sélectionnée.");
         }
