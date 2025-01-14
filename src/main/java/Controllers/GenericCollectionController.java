@@ -49,10 +49,6 @@ public class GenericCollectionController {
                     Map<String, Object> rowData = event.getRowValue();
                     rowData.put(attribut, event.getNewValue());
                     updateElementInDatabase(rowData); // Sauvegarder les modifications
-
-                    // Exemple : Afficher un message de confirmation
-                    System.out.println("Colonne : " + attribut + " mise à jour pour l'élément ID : " + rowData.get("id"));
-                    // Vous pouvez aussi appeler une méthode pour sauvegarder les modifications dans la base de données.
                 });
                 tableElements.getColumns().add(column);
             }
@@ -163,7 +159,6 @@ public class GenericCollectionController {
 
     @FXML
     private void handleRetourDashboard() {
-        // Fermer la fenêtre actuelle
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/Dashboard.fxml"));
             Stage stage = new Stage();
@@ -173,27 +168,6 @@ public class GenericCollectionController {
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Erreur", "Impossible de revenir au Dashboard.");
-        }
-
-        //Stage stage = (Stage) vboxChamps.getScene().getWindow();
-        //stage.close();
-    }
-
-    public void afficherCollection(String nomCollection) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestionCollection.fxml"));
-            Parent root = loader.load();
-
-            GenericCollectionController controller = loader.getController();
-            controller.setNomCollection(nomCollection);
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Gestion de la collection : " + nomCollection);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Erreur", "Erreur lors du chargement de la vue gestionCollection.fxml : " + e.getMessage());
         }
     }
 

@@ -104,30 +104,6 @@ public class ServiceCollection implements AutoCloseable {
         return list;
     }
 
-    public int getNombreTotal() throws SQLException {
-        String query = "SELECT COUNT(*) AS total FROM Collections.`" + nomTable + "`";
-        try (Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-            if (rs.next()) {
-                return rs.getInt("total");
-            }
-        }
-        return 0;
-    }
-
-    public int getObjectifTotalParNom(String nomCollection) throws SQLException {
-        String query = "SELECT objectif_total FROM Collections.typesExistants WHERE nomType = ?";
-        try (PreparedStatement pre = con.prepareStatement(query)) {
-            pre.setString(1, nomCollection);
-            try (ResultSet resultSet = pre.executeQuery()){
-                if (resultSet.next()) {
-                    return resultSet.getInt("objectif_total");
-                }
-            }
-        }
-        return 0;
-    }
-
     public List<String> getAttributs() throws SQLException {
         List<String> attributs = new ArrayList<>();
         String query = "SELECT * FROM Collections.`" + nomTable + "` LIMIT 1";

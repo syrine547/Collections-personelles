@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.collections.FXCollections?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="Controllers.AjoutCollectionController">
@@ -28,33 +26,6 @@
             <VBox fx:id="vboxAttributs" spacing="10"> </VBox> <Button text="Ajouter un attribut" onAction="#handleAjouterAttribut" />
         </VBox>
     </center>
-    <!--<center>
-        <VBox spacing="10" alignment="CENTER">
-            <Label text="Attributs de la collection" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-            <VBox fx:id="vboxAttributs">
-
-                <HBox spacing="10" alignment="CENTER">
-                    <Label text="Objectif Total : " />
-                    <TextField fx:id="fieldObjectifTotal" promptText="Exemple : 100" />
-                </HBox>
-                <HBox spacing="10">
-                    <TextField promptText="Nom de l'attribut" editable="true" />
-                    <ComboBox fx:id="comboType" promptText="Type">
-                        <items>
-                            <FXCollections fx:factory="observableArrayList">
-                                <String fx:value="VARCHAR(255)" />
-                                <String fx:value="INT" />
-                                <String fx:value="DATE" />
-                                <String fx:value="FLOAT" />
-                            </FXCollections>
-                        </items>
-                    </ComboBox>
-
-                </HBox>
-            </VBox>
-            <Button text="Ajouter un attribut" onAction="#handleAjouterAttribut" />
-        </VBox>
-    </center>-->
 
     <bottom>
         <HBox alignment="CENTER">

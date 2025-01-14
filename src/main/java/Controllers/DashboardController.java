@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
-import javafx.scene.control.ListView;
 
 public class DashboardController {
 
@@ -137,41 +136,6 @@ public class DashboardController {
         }
     }
 
-    private void navigateToPage(String fxmlFileName) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/" + fxmlFileName));
-            Parent root = loader.load();
-
-            Scene currentScene = comboBoxCollections.getScene();
-            Stage stage = (Stage) currentScene.getWindow();
-            stage.getScene().setRoot(root);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Erreur lors de la navigation vers : " + fxmlFileName);
-        }
-    }
-
-    private String getFxmlFileForCollection(String collectionName) {
-        String fxmlFile = null;
-        String query = "SELECT fxmlFile FROM Collections.typesExistants WHERE nomType = ?";
-
-        try (Connection con = DataSource.getInstance().getCon();
-             PreparedStatement pstmt = con.prepareStatement(query)) {
-
-            pstmt.setString(1, collectionName); // Associer le nom de la collection
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    fxmlFile = rs.getString("fxmlFile"); // Récupérer le nom du fichier FXML
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Erreur lors de la récupération du fichier FXML pour la collection : " + collectionName);
-        }
-
-        return fxmlFile;
-    }
-
     private int getTotalForCollection(String collection) throws SQLException {
         String query = "SELECT COUNT(*) AS total FROM Collections." + collection + ""; // Utilisation de COUNT(*)
         try (Connection con = DataSource.getInstance().getCon();
@@ -181,7 +145,7 @@ public class DashboardController {
                 return rs.getInt("total");
             }
         }
-        return 0; // Retourne 0 s'il y a une erreur ou si la table est vide
+        return 0;
     }
 
     private int getObjectifForCollection(String collection) throws SQLException {
@@ -195,7 +159,7 @@ public class DashboardController {
                 }
             }
         }
-        return 0; // Handle cases where there's no objective or collection not found
+        return 0;
     }
 
     @FXML
