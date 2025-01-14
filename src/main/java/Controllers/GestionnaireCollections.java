@@ -15,7 +15,7 @@ public class GestionnaireCollections {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestionCollection.fxml")); // Chemin relatif depuis le resources
             Parent root = loader.load();
 
-            GestionCollectionController controller = loader.getController();
+            GenericCollectionController controller = loader.getController();
             controller.setNomCollection(nomCollection);
 
             Stage stage = new Stage();

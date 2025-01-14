@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
@@ -32,15 +33,13 @@ public class DashboardController {
     @FXML
     private VBox vBoxCharts;
     @FXML
-    private ListView<String> listeCollections; // Declare listeCollections as a field
-    private final GestionnaireCollections gestionnaireCollections = new GestionnaireCollections(); // Declare and initialize gestionnaireCollections
-
+    private ListView<String> listeCollections;
 
     @FXML
     public void initialize() {
         try {
             chargerListeCollections();
-            // Récupération des collections dynamiques depuis la base de données
+
             ObservableList<String> collectionsDynamiques = getDynamicCollections();
 
             // Ajout des PieCharts pour chaque collection dynamique
@@ -54,18 +53,18 @@ public class DashboardController {
             comboBoxCollections.setItems(collectionsDynamiques);
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Erreur lors de l'initialisation des graphiques : " + e.getMessage());
+            showAlert("Erreur", "Erreur lors de l'initialisation des graphiques : " + e.getMessage());
         }
     }
 
     private void chargerListeCollections() {
-        List<String> nomsCollections = Arrays.asList("Bouteille", "Livre", "CD"); // Exemple
-        listeCollections.setItems(FXCollections.observableArrayList(nomsCollections));
+        ObservableList<String> nomsCollections = getDynamicCollections();
+        listeCollections.setItems(nomsCollections);
 
         listeCollections.setOnMouseClicked(event -> {
             String selection = listeCollections.getSelectionModel().getSelectedItem();
             if (selection != null) {
-                gestionnaireCollections.afficherCollection(selection); // Appel de afficherCollection !
+                navigateToDynamicCollection(selection);
             }
         });
     }
@@ -83,12 +82,67 @@ public class DashboardController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("Erreur lors de la récupération des collections dynamiques : " + e.getMessage());
-            // You can display an error message to the user here
+            showAlert("Erreur", "Erreur lors de la récupération des collections dynamiques : " + e.getMessage());
         }
 
         return collections;
     }
+
+    private void navigateToDynamicCollection(String collectionName) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestionCollection.fxml"));
+            Parent root = loader.load();
+
+            GenericCollectionController controller = loader.getController();
+            controller.setNomCollection(collectionName);
+
+            Stage stage = (Stage) comboBoxCollections.getScene().getWindow();
+            stage.getScene().setRoot(root);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors de la navigation vers la collection : " + collectionName);
+        }
+    }
+
+    private void ajouterPieChart(String nomCollection, int total, int objectif) {
+        try {
+            PieChart pieChart = new PieChart();
+            afficherPieChart(pieChart, total, objectif, nomCollection);
+
+            VBox vBox = new VBox();
+            vBox.setStyle("-fx-background-color: #bdc3c7; -fx-padding: 10; -fx-border-color: #2c3e50; -fx-border-width: 1;");
+            vBox.setAlignment(javafx.geometry.Pos.CENTER);
+
+            Label label = new Label(nomCollection);
+            label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+            vBox.getChildren().addAll(label, pieChart);
+            vBoxCharts.getChildren().add(vBox);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors de l'ajout du PieChart pour " + nomCollection);
+        }
+    }
+
+    private void afficherPieChart(PieChart pieChart, int total, int objectif, String nom) {
+        try {
+            if (objectif <= 0) {
+                throw new IllegalArgumentException("L'objectif total doit être supérieur à zéro pour " + nom);
+            }
+
+            int restant = Math.max(0, objectif - total);
+
+            ObservableList<PieChart.Data> data = FXCollections.observableArrayList(
+                    new PieChart.Data("Atteint", total),
+                    new PieChart.Data("Restant", restant)
+            );
+            pieChart.setData(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors de l'affichage du PieChart pour " + nom);
+        }
+    }
+
     @FXML
     private void handleCollectionSelection(ActionEvent event) {
         String selectedCollection = comboBoxCollections.getValue(); // Récupérer la sélection
@@ -103,6 +157,20 @@ public class DashboardController {
             }
         } else {
             System.out.println("Aucune collection sélectionnée.");
+        }
+    }
+
+    private void navigateToPage(String fxmlFileName) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/" + fxmlFileName));
+            Parent root = loader.load();
+
+            Scene currentScene = comboBoxCollections.getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            stage.getScene().setRoot(root);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Erreur lors de la navigation vers : " + fxmlFileName);
         }
     }
 
@@ -125,46 +193,6 @@ public class DashboardController {
         }
 
         return fxmlFile;
-    }
-
-
-    private void ajouterPieChart(String nomCollection, int total, int objectif) {
-        try {
-            PieChart pieChart = new PieChart();
-            afficherPieChart(pieChart, total, objectif, nomCollection);
-
-            VBox vBox = new VBox();
-            vBox.setStyle("-fx-background-color: #bdc3c7; -fx-padding: 10; -fx-border-color: #2c3e50; -fx-border-width: 1;");
-            vBox.setAlignment(javafx.geometry.Pos.CENTER);
-
-            Label label = new Label(nomCollection);
-            label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-
-            vBox.getChildren().addAll(label, pieChart);
-            vBoxCharts.getChildren().add(vBox);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Erreur lors de l'ajout du PieChart pour " + nomCollection);
-        }
-    }
-
-    private void afficherPieChart(PieChart pieChart, int total, int objectif, String nom) {
-        try {
-            if (objectif <= 0) {
-                throw new IllegalArgumentException("L'objectif total doit être supérieur à zéro pour " + nom);
-            }
-
-            int restant = Math.max(0, objectif - total);
-
-            ObservableList<PieChart.Data> data = FXCollections.observableArrayList(
-                    new PieChart.Data("Atteint", total),
-                    new PieChart.Data("Restant", restant)
-            );
-            pieChart.setData(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Erreur lors de l'affichage du PieChart pour " + nom + " : " + e.getMessage());
-        }
     }
 
     private int getTotalForCollection(String collection) throws SQLException {
@@ -193,20 +221,6 @@ public class DashboardController {
         return 0; // Handle cases where there's no objective or collection not found
     }
 
-    private void navigateToPage(String fxmlFileName) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/" + fxmlFileName));
-            Parent root = loader.load();
-
-            Scene currentScene = comboBoxCollections.getScene();
-            Stage stage = (Stage) currentScene.getWindow();
-            stage.getScene().setRoot(root);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Erreur lors de la navigation vers : " + fxmlFileName);
-        }
-    }
-
     @FXML
     private void handleAjouterCollection(ActionEvent event) {
         try {
@@ -222,33 +236,13 @@ public class DashboardController {
         }
     }
 
-    private void navigateToDynamicCollection(String collectionName) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestionCollection.fxml"));
-            Parent root = loader.load();
-
-            GestionCollectionController controller = loader.getController();
-            controller.setNomCollection(collectionName);
-
-            Stage stage = (Stage) comboBoxCollections.getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Erreur lors de la navigation vers gestionCollection.fxml");
-        }
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
-
-    private List<String> getAttributsForCollection(String collectionName) {
-        // Retourne les attributs de la collection (à personnaliser selon vos besoins)
-        if ("Nouvelle Collection 1".equals(collectionName)) {
-            return List.of("Nom", "Catégorie", "Valeur");
-        } else if ("Nouvelle Collection 2".equals(collectionName)) {
-            return List.of("Titre", "Auteur", "Année");
-        } else {
-            return List.of("Attribut 1", "Attribut 2"); // Exemple par défaut
-        }
-    }
-
     @FXML
     private void handleNavigateToProfil(ActionEvent event) {
         System.out.println("Naviguer vers le Profil");
