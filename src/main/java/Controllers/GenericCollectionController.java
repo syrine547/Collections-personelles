@@ -7,16 +7,16 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
-
 import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
 import java.util.List;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
+import java.util.Map;
 
 public class GenericCollectionController {
 
@@ -32,26 +32,100 @@ public class GenericCollectionController {
 
     private void initialiserUI() {
         try (ServiceCollection service = new ServiceCollection(nomCollection)) {
-            // Récupérer les attributs de la collection
             List<String> attributs = service.getAttributs();
 
-            // Ajouter des champs dynamiques pour chaque attribut
+            tableElements.setEditable(true);
+
+            // Configurer dynamiquement les colonnes du tableau
             tableElements.getColumns().clear();
             for (String attribut : attributs) {
                 TableColumn<Map<String, Object>, String> column = new TableColumn<>(attribut);
                 column.setCellValueFactory(data -> new SimpleStringProperty(
                         data.getValue().getOrDefault(attribut, "").toString()
                 ));
+                column.setCellFactory(TextFieldTableCell.forTableColumn());
+                column.setOnEditCommit(event -> {
+                    // Mettre à jour la valeur dans les données
+                    Map<String, Object> rowData = event.getRowValue();
+                    rowData.put(attribut, event.getNewValue());
+                    updateElementInDatabase(rowData); // Sauvegarder les modifications
+
+                    // Exemple : Afficher un message de confirmation
+                    System.out.println("Colonne : " + attribut + " mise à jour pour l'élément ID : " + rowData.get("id"));
+                    // Vous pouvez aussi appeler une méthode pour sauvegarder les modifications dans la base de données.
+                });
                 tableElements.getColumns().add(column);
             }
+
+            // Ajouter une colonne "Actions" avec des boutons
+            TableColumn<Map<String, Object>, Void> actionsColumn = new TableColumn<>("Actions");
+            actionsColumn.setCellFactory(col -> new TableCell<>() {
+                private final Button deleteButton = new Button("Supprimer");
+
+                {
+                    deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+
+                    deleteButton.setOnAction(event -> {
+                        Map<String, Object> currentItem = getTableView().getItems().get(getIndex());
+                        handleDeleteElement(currentItem);
+                    });
+                }
+
+                @Override
+                protected void updateItem(Void item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty) {
+                        setGraphic(null);
+                    } else {
+                        HBox buttons = new HBox(5, deleteButton);
+                        buttons.setAlignment(Pos.CENTER);
+                        setGraphic(buttons);
+                    }
+                }
+            });
+
+            tableElements.getColumns().add(actionsColumn);
 
             // Charger les données dans le tableau
             tableElements.getItems().clear();
             List<Map<String, Object>> data = service.readAll();
             tableElements.getItems().addAll(data);
+
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert("Erreur", "Erreur lors de l'initialisation de la collection : " + e.getMessage());
+        }
+    }
+
+    private void handleDeleteElement(Map<String, Object> item) {
+        try (ServiceCollection service = new ServiceCollection(nomCollection)) {
+            // Supposons que chaque élément a un identifiant unique dans la colonne "id"
+            int id = (int) item.get("id");
+            boolean success = service.supprimerElement(id, "id");
+            if (success) {
+                tableElements.getItems().remove(item);
+                showAlert("Succès", "Élément supprimé avec succès !");
+            } else {
+                showAlert("Erreur", "Impossible de supprimer l'élément.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors de la suppression de l'élément : " + e.getMessage());
+        }
+    }
+
+    private void updateElementInDatabase(Map<String, Object> rowData) {
+        try (ServiceCollection service = new ServiceCollection(nomCollection)) {
+            int id = (int) rowData.get("id");
+            boolean success = service.updateElement(id, "id", rowData);
+            if (success) {
+                showAlert("Succès", "Élément mis à jour avec succès !");
+            } else {
+                showAlert("Erreur", "Impossible de mettre à jour l'élément.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors de la mise à jour de l'élément : " + e.getMessage());
         }
     }
 
