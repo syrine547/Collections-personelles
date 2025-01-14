@@ -20,8 +20,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 import java.sql.PreparedStatement;
+import javafx.scene.control.ListView;
 
 public class DashboardController {
 
@@ -29,10 +31,15 @@ public class DashboardController {
     private ComboBox<String> comboBoxCollections;
     @FXML
     private VBox vBoxCharts;
+    @FXML
+    private ListView<String> listeCollections; // Declare listeCollections as a field
+    private final GestionnaireCollections gestionnaireCollections = new GestionnaireCollections(); // Declare and initialize gestionnaireCollections
+
 
     @FXML
     public void initialize() {
         try {
+            chargerListeCollections();
             // Récupération des collections dynamiques depuis la base de données
             ObservableList<String> collectionsDynamiques = getDynamicCollections();
 
@@ -49,6 +56,18 @@ public class DashboardController {
             e.printStackTrace();
             System.err.println("Erreur lors de l'initialisation des graphiques : " + e.getMessage());
         }
+    }
+
+    private void chargerListeCollections() {
+        List<String> nomsCollections = Arrays.asList("Bouteille", "Livre", "CD"); // Exemple
+        listeCollections.setItems(FXCollections.observableArrayList(nomsCollections));
+
+        listeCollections.setOnMouseClicked(event -> {
+            String selection = listeCollections.getSelectionModel().getSelectedItem();
+            if (selection != null) {
+                gestionnaireCollections.afficherCollection(selection); // Appel de afficherCollection !
+            }
+        });
     }
 
     private ObservableList<String> getDynamicCollections() {
@@ -149,7 +168,7 @@ public class DashboardController {
     }
 
     private int getTotalForCollection(String collection) throws SQLException {
-        String query = "SELECT COUNT(*) AS total FROM Collections.`" + collection + "`"; // Utilisation de COUNT(*)
+        String query = "SELECT COUNT(*) AS total FROM Collections." + collection + ""; // Utilisation de COUNT(*)
         try (Connection con = DataSource.getInstance().getCon();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {

@@ -2,83 +2,88 @@ package Service;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 import Utils.DataSource;
 
-public class ServiceCollection<T> {
-    private Connection con = DataSource.getInstance().getCon();
-    private Statement ste = null;
-    private String nomTable; // Nom de la table pour cette collection
-    private static final int OBJECTIF_TOTAL = 100;
+public class ServiceCollection implements AutoCloseable {
 
-    public ServiceCollection(String nomTable) {
+    private final String nomTable;
+    private final Connection con;
+
+    public ServiceCollection(String nomTable) throws SQLException {
         this.nomTable = nomTable;
-        try {
-            ste = con.createStatement();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        this.con = DataSource.getInstance().getCon();
+        if (this.con == null) {
+            throw new SQLException("La connexion à la base de données est nulle.");
         }
     }
 
-    public boolean ajouterElement(String[] colonnes, Object[] valeurs) throws SQLException {
-        if (colonnes.length != valeurs.length) {
-            throw new IllegalArgumentException("Le nombre de colonnes et de valeurs doit correspondre.");
+    public boolean ajouterElement(Map<String, Object> element) throws SQLException {
+        if (element == null || element.isEmpty()) {
+            throw new IllegalArgumentException("L'élément à ajouter ne peut pas être vide.");
         }
 
-        // Construire la requête SQL
-        StringBuilder query = new StringBuilder("INSERT INTO Collections." + nomTable + " (");
-        for (String colonne : colonnes) {
-            query.append(colonne).append(",");
+        StringBuilder query = new StringBuilder("INSERT INTO Collections.`" + nomTable + "` (");
+        StringBuilder values = new StringBuilder("VALUES (");
+
+        for (String colonne : element.keySet()) {
+            query.append("`").append(colonne).append("`, ");
+            values.append("?, ");
         }
-        query.deleteCharAt(query.length() - 1).append(") VALUES (");
-        for (int i = 0; i < valeurs.length; i++) {
-            query.append("?,");
-        }
-        query.deleteCharAt(query.length() - 1).append(")");
+
+        query.delete(query.length() - 2, query.length());
+        values.delete(values.length() - 2, values.length());
+
+        query.append(") ").append(values).append(")");
 
         try (PreparedStatement pre = con.prepareStatement(query.toString())) {
-            for (int i = 0; i < valeurs.length; i++) {
-                pre.setObject(i + 1, valeurs[i]);
+            int i = 1;
+            for (Object valeur : element.values()) {
+                pre.setObject(i++, valeur);
             }
             return pre.executeUpdate() > 0;
         }
     }
 
-    public boolean supprimerElement(String colonneId, int id) throws SQLException {
-        String query = "DELETE FROM Collections." + nomTable + " WHERE " + colonneId + " = ?";
+    public boolean supprimerElement(int id, String colonneId) throws SQLException {
+        String query = "DELETE FROM Collections.`" + nomTable + "` WHERE `" + colonneId + "` = ?";
         try (PreparedStatement pre = con.prepareStatement(query)) {
             pre.setInt(1, id);
             return pre.executeUpdate() > 0;
         }
     }
 
-    public boolean updateElement(String[] colonnes, Object[] valeurs, String colonneId, int id) throws SQLException {
-        if (colonnes.length != valeurs.length) {
-            throw new IllegalArgumentException("Le nombre de colonnes et de valeurs doit correspondre.");
+    public boolean updateElement(int id, String colonneId, Map<String, Object> element) throws SQLException {
+        if (element == null || element.isEmpty()) {
+            throw new IllegalArgumentException("L'élément à mettre à jour ne peut pas être vide.");
         }
 
-        // Construire la requête SQL
-        StringBuilder query = new StringBuilder("UPDATE Collections." + nomTable + " SET ");
-        for (String colonne : colonnes) {
-            query.append(colonne).append(" = ?,");
+        StringBuilder query = new StringBuilder("UPDATE Collections.`" + nomTable + "` SET ");
+
+        for (String colonne : element.keySet()) {
+            query.append("`").append(colonne).append("` = ?, ");
         }
-        query.deleteCharAt(query.length() - 1).append(" WHERE ").append(colonneId).append(" = ?");
+
+        query.delete(query.length() - 2, query.length());
+
+        query.append(" WHERE `").append(colonneId).append("` = ?");
 
         try (PreparedStatement pre = con.prepareStatement(query.toString())) {
-            for (int i = 0; i < valeurs.length; i++) {
-                pre.setObject(i + 1, valeurs[i]);
+            int i = 1;
+            for (Object valeur : element.values()) {
+                pre.setObject(i++, valeur);
             }
-            pre.setInt(valeurs.length + 1, id);
+            pre.setInt(i, id);
             return pre.executeUpdate() > 0;
         }
     }
 
     public List<Map<String, Object>> readAll() throws SQLException {
         List<Map<String, Object>> list = new ArrayList<>();
-        String query = "SELECT * FROM Collections.`" + nomTable + "`"; // Utilisation de backticks
+        String query = "SELECT * FROM Collections.`" + nomTable + "`";
 
         try (Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
@@ -100,10 +105,11 @@ public class ServiceCollection<T> {
     }
 
     public int getNombreTotal() throws SQLException {
-        String query = "SELECT COUNT(*) AS total FROM Collections." + nomTable;
-        try (ResultSet resultSet = ste.executeQuery(query)) {
-            if (resultSet.next()) {
-                return resultSet.getInt("total");
+        String query = "SELECT COUNT(*) AS total FROM Collections.`" + nomTable + "`";
+        try (Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            if (rs.next()) {
+                return rs.getInt("total");
             }
         }
         return 0;
@@ -113,11 +119,34 @@ public class ServiceCollection<T> {
         String query = "SELECT objectif_total FROM Collections.typesExistants WHERE nomType = ?";
         try (PreparedStatement pre = con.prepareStatement(query)) {
             pre.setString(1, nomCollection);
-            ResultSet resultSet = pre.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getInt("objectif_total");
+            try (ResultSet resultSet = pre.executeQuery()){
+                if (resultSet.next()) {
+                    return resultSet.getInt("objectif_total");
+                }
             }
         }
-        return 0; // Valeur par défaut
+        return 0;
+    }
+
+    public List<String> getAttributs() throws SQLException {
+        List<String> attributs = new ArrayList<>();
+        String query = "SELECT * FROM Collections.`" + nomTable + "` LIMIT 1";
+
+        try (Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+
+            for (int i = 1; i <= columnCount; i++) {
+                attributs.add(metaData.getColumnName(i));
+            }
+        }
+        return attributs;
+    }
+
+    @Override
+    public void close() throws SQLException {
+        // Rien à faire ici car on utilise try-with-resources dans les autres méthodes.
     }
 }

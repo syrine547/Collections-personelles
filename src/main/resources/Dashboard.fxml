@@ -24,16 +24,15 @@
         </HBox>
     </top>
 
-    <!-- Contenu principal -->
+    <!-- Contenu principal avec ScrollPane -->
     <center>
-        <VBox fx:id="vBoxCharts" prefWidth="300" prefHeight="200"
-              maxWidth="400" maxHeight="300"
-              minWidth="200" minHeight="150"
-              spacing="20" style="-fx-padding: 20; -fx-background-color: #ecf0f1;">
-        </VBox>
+        <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-padding: 10;">
+            <VBox fx:id="vBoxCharts" spacing="20" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #ecf0f1;"
+                  prefWidth="600" prefHeight="400" maxWidth="800" maxHeight="600">
+                <ListView fx:id="listeCollections" prefWidth="400" prefHeight="200" />
+                <PieChart fx:id="chart1" prefWidth="400" prefHeight="300" />
+                <PieChart fx:id="chart2" prefWidth="400" prefHeight="300" />
+            </VBox>
+        </ScrollPane>
     </center>
-    <!--<center>
-        <GridPane fx:id="gridPaneCharts" hgap="20" vgap="20" style="-fx-padding: 20; -fx-background-color: #ecf0f1;">
-        </GridPane>
-    </center>-->
 </BorderPane>

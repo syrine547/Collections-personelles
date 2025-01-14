@@ -7,22 +7,22 @@
     <!-- Partie haute : Champs dynamiques pour ajouter/modifier un élément -->
     <top>
         <VBox fx:id="vboxChamps" spacing="15" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #34495e;">
-            <!-- Les champs seront ajoutés dynamiquement ici -->
+            <!-- Les champs dynamiques seront ajoutés ici -->
         </VBox>
     </top>
 
     <!-- Partie centrale : TableView pour afficher les éléments -->
     <center>
         <TableView fx:id="tableElements" prefHeight="400" prefWidth="900" style="-fx-background-color: white;">
-            <!-- Les colonnes seront ajoutées dynamiquement -->
+            <!-- Les colonnes dynamiques seront ajoutées ici -->
         </TableView>
     </center>
 
-    <!-- Partie basse : Bouton pour revenir au tableau de bord -->
+    <!-- Partie basse : Boutons pour revenir au tableau de bord et ajouter des éléments -->
     <bottom>
-        <HBox alignment="CENTER" style="-fx-padding: 10;">
+        <HBox alignment="CENTER" spacing="15" style="-fx-padding: 10;">
+            <Button text="Ajouter un élément" style="-fx-background-color: #2ecc71; -fx-text-fill: white;" onAction="#handleAjouterElement" />
             <Button text="Retour au Dashboard" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#handleRetourDashboard" />
         </HBox>
     </bottom>
 </BorderPane>
-
