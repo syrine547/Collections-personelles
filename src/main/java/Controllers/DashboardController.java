@@ -1,14 +1,16 @@
 package Controllers;
 
+import Service.ServiceCollection;
 import Utils.DataSource;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -21,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
+import java.util.Map;
 
 public class DashboardController {
 
@@ -28,23 +31,25 @@ public class DashboardController {
     private ComboBox<String> comboBoxCollections;
     @FXML
     private VBox vBoxCharts;
+    @FXML
+    private GridPane gridCharts;
+
 
     @FXML
     public void initialize() {
         try {
-            // Charger les collections dynamiques
+            System.out.println("Chargement des collections dynamiques...");
             ObservableList<String> collectionsDynamiques = getDynamicCollections();
+            System.out.println("Collections trouvées : " + collectionsDynamiques);
 
-            // Remplir la ComboBox avec les collections dynamiques
             comboBoxCollections.setItems(collectionsDynamiques);
 
-            // Charger les PieCharts pour chaque collection dynamique
             for (String collection : collectionsDynamiques) {
+                System.out.println("Ajout du PieChart pour : " + collection);
                 int total = getTotalForCollection(collection);
                 int objectif = getObjectifForCollection(collection);
                 ajouterPieChart(collection, total, objectif);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Erreur", "Erreur lors de l'initialisation des graphiques : " + e.getMessage());
@@ -88,18 +93,41 @@ public class DashboardController {
 
     private void ajouterPieChart(String nomCollection, int total, int objectif) {
         try {
+            // Créer le PieChart
             PieChart pieChart = new PieChart();
             afficherPieChart(pieChart, total, objectif, nomCollection);
 
-            VBox vBox = new VBox();
+            // Créer une VBox pour le graphique et les boutons
+            VBox vBox = new VBox(5); // Espacement entre les éléments
             vBox.setStyle("-fx-background-color: #bdc3c7; -fx-padding: 10; -fx-border-color: #2c3e50; -fx-border-width: 1;");
             vBox.setAlignment(javafx.geometry.Pos.CENTER);
 
+            // Ajouter un label pour le nom de la collection
             Label label = new Label(nomCollection);
             label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-            vBox.getChildren().addAll(label, pieChart);
-            vBoxCharts.getChildren().add(vBox);
+            // Ajouter les boutons Modifier et Supprimer
+            Button btnModifier = new Button("Modifier");
+            btnModifier.setStyle("-fx-background-color: #f1c40f; -fx-text-fill: white;");
+            btnModifier.setOnAction(event -> handleModifierCollection(nomCollection));
+
+            Button btnSupprimer = new Button("Supprimer");
+            btnSupprimer.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+            btnSupprimer.setOnAction(event -> handleSupprimerCollection(nomCollection));
+
+            // Ajouter le PieChart, le label et les boutons dans la VBox
+            HBox buttonsBox = new HBox(10, btnModifier, btnSupprimer);
+            buttonsBox.setAlignment(javafx.geometry.Pos.CENTER);
+
+            vBox.getChildren().addAll(label, pieChart, buttonsBox);
+
+            // Calcul de la position dans la grille
+            int index = gridCharts.getChildren().size();
+            int row = index / 3; // Supposez 3 colonnes
+            int col = index % 3;
+
+            // Ajouter la VBox dans le GridPane
+            gridCharts.add(vBox, col, row);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Erreur", "Erreur lors de l'ajout du PieChart pour " + nomCollection);
@@ -176,6 +204,104 @@ public class DashboardController {
             e.printStackTrace();
         }
     }
+
+    private void handleSupprimerCollection(String nomCollection) {
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION,
+                "Êtes-vous sûr de vouloir supprimer la collection " + nomCollection + " ? Cette action est irréversible.",
+                ButtonType.YES, ButtonType.NO);
+        confirmation.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.YES) {
+                try (ServiceCollection service = new ServiceCollection(nomCollection)) {
+                    if (service.supprimerCollection(nomCollection)) {
+                        showAlert("Succès", "Collection supprimée avec succès !");
+                        refreshCharts();
+                    } else {
+                        showAlert("Erreur", "Échec de la suppression de la collection.");
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    showAlert("Erreur", "Erreur lors de la suppression : " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    @FXML
+    private void handleModifierCollection(String nomCollection) {
+        try (ServiceCollection service = new ServiceCollection(nomCollection)) {
+            int objectifTotal = service.getObjectifTotalParNom(nomCollection);
+            ObservableList<Map<String, String>> attributs = service.getAttributsAvecTypes();
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/modifierCollection.fxml"));
+            Parent root = loader.load();
+
+            ModifierCollectionController controller = loader.getController();
+            controller.setCollectionDetails(nomCollection, objectifTotal, attributs);
+
+            Stage stage = new Stage();
+            stage.setTitle("Modifier la Collection");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+            // Rafraîchir les données après modification
+            refreshCharts();
+        } catch (IOException | SQLException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors de la modification de la collection : " + e.getMessage());
+        }
+    }
+
+    private void refreshCharts() {
+        // Effacer les anciens graphiques du GridPane
+        gridCharts.getChildren().clear();
+
+        try {
+            // Récupérer toutes les collections dynamiques
+            ObservableList<String> collectionsDynamiques = getDynamicCollections();
+
+            int colCount = 3; // Nombre de colonnes dans la grille
+            int index = 0;
+
+            // Parcourir les collections pour ajouter les graphiques
+            for (String collection : collectionsDynamiques) {
+                int row = index / colCount; // Calcul de la ligne
+                int col = index % colCount; // Calcul de la colonne
+
+                // Récupérer les données pour la collection
+                int total = getTotalForCollection(collection);
+                int objectif = getObjectifForCollection(collection);
+
+                // Ajouter le PieChart dans la grille
+                ajouterPieChartDansGrille(collection, total, objectif, row, col);
+
+                index++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors du rafraîchissement des graphiques : " + e.getMessage());
+        }
+    }
+
+    private void ajouterPieChartDansGrille(String nomCollection, int total, int objectif, int row, int col) {
+        // Créer un PieChart
+        PieChart pieChart = new PieChart();
+        afficherPieChart(pieChart, total, objectif, nomCollection);
+
+        // Créer une VBox pour contenir le PieChart et le Label
+        VBox vBox = new VBox(10);
+        vBox.setAlignment(Pos.CENTER);
+        vBox.setStyle("-fx-background-color: #bdc3c7; -fx-padding: 10; -fx-border-color: #2c3e50; -fx-border-width: 1;");
+
+        // Ajouter un Label pour le nom de la collection
+        Label label = new Label(nomCollection);
+        label.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+
+        vBox.getChildren().addAll(label, pieChart);
+
+        // Ajouter la VBox dans le GridPane
+        gridCharts.add(vBox, col, row);
+    }
+
 
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);

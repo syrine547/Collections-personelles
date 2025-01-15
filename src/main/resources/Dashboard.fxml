@@ -3,7 +3,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.DashboardController">
+<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.DashboardController"
+            prefWidth="900" prefHeight="600" maxWidth="900" maxHeight="600">
     <!-- Barre de navigation supérieure -->
     <top>
         <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #2c3e50; -fx-border-color: black;">
@@ -25,12 +26,10 @@
 
     <!-- Contenu principal avec ScrollPane -->
     <center>
-        <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-padding: 10;">
-            <VBox fx:id="vBoxCharts" spacing="20" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #ecf0f1;"
-                  prefWidth="600" prefHeight="400" maxWidth="800" maxHeight="600">
-                <!-- Ajoutez ici vos graphiques -->
-            </VBox>
+        <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-padding: 10;" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED"
+                    prefViewportWidth="850" prefViewportHeight="500">
+            <GridPane fx:id="gridCharts" alignment="TOP_CENTER" style="-fx-padding: 20; -fx-background-color: #ecf0f1;"
+                      hgap="20" vgap="20" maxWidth="800" />
         </ScrollPane>
     </center>
-
 </BorderPane>

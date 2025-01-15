@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import Utils.DataSource;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class ServiceCollection implements AutoCloseable {
 
@@ -119,6 +121,107 @@ public class ServiceCollection implements AutoCloseable {
             }
         }
         return attributs;
+    }
+
+    public boolean supprimerCollection(String nomCollection) throws SQLException {
+        String query = "DROP TABLE IF EXISTS Collections.`" + nomCollection + "`";
+        try (Statement stmt = con.createStatement()) {
+            stmt.executeUpdate(query);
+        }
+        String deleteMeta = "DELETE FROM Collections.typesExistants WHERE nomType = ?";
+        try (PreparedStatement pstmt = con.prepareStatement(deleteMeta)) {
+            pstmt.setString(1, nomCollection);
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean renommerCollection(String ancienNom, String nouveauNom) throws SQLException {
+        String query = "ALTER TABLE Collections.`" + ancienNom + "` RENAME TO Collections.`" + nouveauNom + "`";
+        try (Statement stmt = con.createStatement()) {
+            stmt.executeUpdate(query);
+        }
+        String updateMeta = "UPDATE Collections.typesExistants SET nomType = ? WHERE nomType = ?";
+        try (PreparedStatement pstmt = con.prepareStatement(updateMeta)) {
+            pstmt.setString(1, nouveauNom);
+            pstmt.setString(2, ancienNom);
+            return pstmt.executeUpdate() > 0;
+        }
+    }
+
+    public void mettreAJourAttributs(String nomCollection, ObservableList<Map<String, String>> attributs) throws SQLException {
+        // Logique pour mettre à jour les colonnes dans la base de données
+    }
+
+    public void mettreAJourObjectif(String nomCollection, int nouvelObjectif) throws SQLException {
+        String query = "UPDATE Collections.typesExistants SET objectif_total = ? WHERE nomType = ?";
+        try (PreparedStatement pstmt = con.prepareStatement(query)) {
+            pstmt.setInt(1, nouvelObjectif);
+            pstmt.setString(2, nomCollection);
+            pstmt.executeUpdate();
+        }
+    }
+
+    public int getObjectifTotalParNom(String nomCollection) throws SQLException {
+        String query = "SELECT objectif_total FROM Collections.typesExistants WHERE nomType = ?";
+        try (PreparedStatement pstmt = con.prepareStatement(query)) {
+            pstmt.setString(1, nomCollection);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("objectif_total");
+                }
+            }
+        }
+        return 0; // Retourne 0 si l'objectif n'est pas trouvé
+    }
+
+    public ObservableList<Map<String, String>> getAttributsAvecTypes() throws SQLException {
+        ObservableList<Map<String, String>> attributs = FXCollections.observableArrayList();
+        String query = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'Collections' AND TABLE_NAME = ?";
+
+        try (PreparedStatement pstmt = con.prepareStatement(query)) {
+            pstmt.setString(1, nomTable); // `nomTable` est la table associée à la collection
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, String> attribut = new HashMap<>();
+                    attribut.put("nom", rs.getString("COLUMN_NAME"));
+                    attribut.put("type", rs.getString("DATA_TYPE"));
+                    attributs.add(attribut);
+                }
+            }
+        }
+        return attributs;
+    }
+
+    public void synchroniserAttributs(String nomTable, ObservableList<Map<String, String>> attributs) throws SQLException {
+        // Récupérer les attributs actuels de la base de données
+        List<Map<String, String>> attributsExistants = getAttributsAvecTypes();
+
+        // Supprimer les colonnes inexistantes
+        for (Map<String, String> existant : attributsExistants) {
+            if (attributs.stream().noneMatch(a -> a.get("nom").equals(existant.get("nom")))) {
+                String query = "ALTER TABLE Collections.`" + nomTable + "` DROP COLUMN `" + existant.get("nom") + "`";
+                try (Statement stmt = con.createStatement()) {
+                    stmt.executeUpdate(query);
+                }
+            }
+        }
+
+        // Ajouter ou modifier les colonnes
+        for (Map<String, String> attribut : attributs) {
+            if (attributsExistants.stream().noneMatch(e -> e.get("nom").equals(attribut.get("nom")))) {
+                // Ajouter une nouvelle colonne
+                String query = "ALTER TABLE Collections.`" + nomTable + "` ADD COLUMN `" + attribut.get("nom") + "` " + attribut.get("type");
+                try (Statement stmt = con.createStatement()) {
+                    stmt.executeUpdate(query);
+                }
+            } else {
+                // Modifier une colonne existante
+                String query = "ALTER TABLE Collections.`" + nomTable + "` MODIFY COLUMN `" + attribut.get("nom") + "` " + attribut.get("type");
+                try (Statement stmt = con.createStatement()) {
+                    stmt.executeUpdate(query);
+                }
+            }
+        }
     }
 
     @Override
