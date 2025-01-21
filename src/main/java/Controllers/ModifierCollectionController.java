@@ -6,11 +6,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
+import javafx. geometry. Insets;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +45,7 @@ public class ModifierCollectionController {
         colNomAttribut.setCellFactory(TextFieldTableCell.forTableColumn());
         colTypeAttribut.setCellFactory(ComboBoxTableCell.forTableColumn("VARCHAR(255)", "INT", "DATE", "FLOAT"));
 
-        // Mise à jour des données lors de l'édition
+        // Appliquer les modifications localement
         colNomAttribut.setOnEditCommit(event -> {
             Map<String, String> attribut = event.getRowValue();
             attribut.put("nom", event.getNewValue());
@@ -64,36 +68,49 @@ public class ModifierCollectionController {
 
     @FXML
     private void handleAjouterAttribut() {
+        // Créer une boîte de dialogue personnalisée
         Dialog<Map<String, String>> dialog = new Dialog<>();
         dialog.setTitle("Ajouter un Attribut");
+        dialog.setHeaderText("Ajoutez un nouvel attribut");
 
-        // Créer les champs d'entrée
-        TextField fieldNom = new TextField();
-        fieldNom.setPromptText("Nom de l'attribut");
+        // Boutons OK et Annuler
+        ButtonType ajouterButtonType = new ButtonType("Ajouter", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(ajouterButtonType, ButtonType.CANCEL);
 
-        ComboBox<String> comboType = new ComboBox<>();
-        comboType.getItems().addAll("VARCHAR(255)", "INT", "DATE", "FLOAT");
-        comboType.setValue("VARCHAR(255)"); // Type par défaut
+        // Contenu de la boîte de dialogue
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
 
-        VBox content = new VBox(10, new Label("Nom de l'attribut :"), fieldNom,
-                new Label("Type de l'attribut :"), comboType);
-        dialog.getDialogPane().setContent(content);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        TextField nomField = new TextField();
+        nomField.setPromptText("Nom de l'attribut");
 
-        dialog.setResultConverter(button -> {
-            if (button == ButtonType.OK) {
-                Map<String, String> nouvelAttribut = new HashMap<>();
-                nouvelAttribut.put("nom", fieldNom.getText());
-                nouvelAttribut.put("type", comboType.getValue());
-                return nouvelAttribut;
+        ComboBox<String> typeComboBox = new ComboBox<>();
+        typeComboBox.getItems().addAll("VARCHAR(255)", "INT", "DATE", "FLOAT");
+        typeComboBox.setValue("VARCHAR(255)"); // Type par défaut
+
+        grid.add(new Label("Nom de l'attribut:"), 0, 0);
+        grid.add(nomField, 1, 0);
+        grid.add(new Label("Type de l'attribut:"), 0, 1);
+        grid.add(typeComboBox, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // Récupérer les résultats
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ajouterButtonType) {
+                Map<String, String> attribut = new HashMap<>();
+                attribut.put("nom", nomField.getText());
+                attribut.put("type", typeComboBox.getValue());
+                return attribut;
             }
             return null;
         });
 
         dialog.showAndWait().ifPresent(nouvelAttribut -> {
-            if (!nouvelAttribut.get("nom").isEmpty()) {
-                attributs.add(nouvelAttribut);
-            }
+            // Ajouter l'attribut localement
+            attributs.add(nouvelAttribut);
         });
     }
 
@@ -111,7 +128,7 @@ public class ModifierCollectionController {
         int nouvelObjectif = Integer.parseInt(fieldObjectifTotal.getText());
 
         try (ServiceCollection service = new ServiceCollection(ancienNomCollection)) {
-            // Renommer la collection si le nom a changé
+            // Renommer la collection si nécessaire
             if (!ancienNomCollection.equals(nouveauNom)) {
                 service.renommerCollection(ancienNomCollection, nouveauNom);
             }

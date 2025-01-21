@@ -241,15 +241,18 @@ public class DashboardController {
             Stage stage = new Stage();
             stage.setTitle("Modifier la Collection");
             stage.setScene(new Scene(root));
+
+            // Rafraîchir les graphiques après la fermeture
+            stage.setOnHiding(event -> refreshCharts());
+
             stage.showAndWait();
 
-            // Rafraîchir les données après modification
-            refreshCharts();
         } catch (IOException | SQLException e) {
             e.printStackTrace();
             showAlert("Erreur", "Erreur lors de la modification de la collection : " + e.getMessage());
         }
     }
+
 
     private void refreshCharts() {
         // Effacer les anciens graphiques du GridPane
@@ -282,26 +285,64 @@ public class DashboardController {
         }
     }
 
+    @FXML
+    private void handleRefresh() {
+        try {
+            // Efface les graphiques existants
+            gridCharts.getChildren().clear();
+
+            // Récupère les collections dynamiques depuis la base de données
+            ObservableList<String> collectionsDynamiques = getDynamicCollections();
+            comboBoxCollections.setItems(collectionsDynamiques); // Rafraîchir la ComboBox
+
+            int colCount = 3; // Nombre de colonnes dans la grille
+            int index = 0;
+
+            // Parcourt les collections et ajoute les graphiques
+            for (String collection : collectionsDynamiques) {
+                int row = index / colCount; // Ligne actuelle
+                int col = index % colCount; // Colonne actuelle
+
+                int total = getTotalForCollection(collection);
+                int objectif = getObjectifForCollection(collection);
+
+                ajouterPieChartDansGrille(collection, total, objectif, row, col);
+                index++;
+            }
+
+            showAlert("Succès", "Les données ont été rafraîchies avec succès !");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors du rafraîchissement des données : " + e.getMessage());
+        }
+    }
+
     private void ajouterPieChartDansGrille(String nomCollection, int total, int objectif, int row, int col) {
-        // Créer un PieChart
         PieChart pieChart = new PieChart();
         afficherPieChart(pieChart, total, objectif, nomCollection);
 
-        // Créer une VBox pour contenir le PieChart et le Label
         VBox vBox = new VBox(10);
         vBox.setAlignment(Pos.CENTER);
         vBox.setStyle("-fx-background-color: #bdc3c7; -fx-padding: 10; -fx-border-color: #2c3e50; -fx-border-width: 1;");
 
-        // Ajouter un Label pour le nom de la collection
         Label label = new Label(nomCollection);
         label.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
-        vBox.getChildren().addAll(label, pieChart);
+        Button btnModifier = new Button("Modifier");
+        btnModifier.setStyle("-fx-background-color: #f1c40f; -fx-text-fill: white;");
+        btnModifier.setOnAction(event -> handleModifierCollection(nomCollection));
 
-        // Ajouter la VBox dans le GridPane
+        Button btnSupprimer = new Button("Supprimer");
+        btnSupprimer.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+        btnSupprimer.setOnAction(event -> handleSupprimerCollection(nomCollection));
+
+        HBox buttonsBox = new HBox(10, btnModifier, btnSupprimer);
+        buttonsBox.setAlignment(Pos.CENTER);
+
+        vBox.getChildren().addAll(label, pieChart, buttonsBox);
+
         gridCharts.add(vBox, col, row);
     }
-
 
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);

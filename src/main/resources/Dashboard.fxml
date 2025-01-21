@@ -17,6 +17,7 @@
             <!-- Boutons à droite -->
             <HBox spacing="10" alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
                 <Pane HBox.hgrow="ALWAYS"/> <!-- Espace flexible -->
+                <Button text="Rafraîchir" style="-fx-background-color: #27ae60; -fx-text-fill: white;" onAction="#handleRefresh" />
                 <Button text="Ajouter une collection" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#handleAjouterCollection" />
                 <Button text="Profil" style="-fx-background-color: #1abc9c; -fx-text-fill: white;" onAction="#handleNavigateToProfil" />
                 <Button text="Déconnexion" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#handleLogout" />

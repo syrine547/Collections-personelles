@@ -17,6 +17,12 @@ import java.util.List;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
 import java.util.Map;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ButtonType;
+import javafx.scene.layout.GridPane;
+import javafx.geometry.Insets;
 
 public class GenericCollectionController {
 
@@ -32,8 +38,10 @@ public class GenericCollectionController {
 
     private void initialiserUI() {
         try (ServiceCollection service = new ServiceCollection(nomCollection)) {
+            // Récupérer les attributs actuels de la collection
             List<String> attributs = service.getAttributs();
 
+            // Permettre l'édition des cellules dans la TableView
             tableElements.setEditable(true);
 
             // Configurer dynamiquement les colonnes du tableau
@@ -48,7 +56,7 @@ public class GenericCollectionController {
                     // Mettre à jour la valeur dans les données
                     Map<String, Object> rowData = event.getRowValue();
                     rowData.put(attribut, event.getNewValue());
-                    updateElementInDatabase(rowData); // Sauvegarder les modifications
+                    updateElementInDatabase(rowData); // Sauvegarder les modifications dans la base de données
                 });
                 tableElements.getColumns().add(column);
             }
@@ -57,10 +65,10 @@ public class GenericCollectionController {
             TableColumn<Map<String, Object>, Void> actionsColumn = new TableColumn<>("Actions");
             actionsColumn.setCellFactory(col -> new TableCell<>() {
                 private final Button deleteButton = new Button("Supprimer");
-
                 {
                     deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
 
+                    // Action du bouton "Supprimer"
                     deleteButton.setOnAction(event -> {
                         Map<String, Object> currentItem = getTableView().getItems().get(getIndex());
                         handleDeleteElement(currentItem);
@@ -95,14 +103,18 @@ public class GenericCollectionController {
 
     private void handleDeleteElement(Map<String, Object> item) {
         try (ServiceCollection service = new ServiceCollection(nomCollection)) {
-            // Supposons que chaque élément a un identifiant unique dans la colonne "id"
-            int id = (int) item.get("id");
-            boolean success = service.supprimerElement(id, "id");
-            if (success) {
-                tableElements.getItems().remove(item);
-                showAlert("Succès", "Élément supprimé avec succès !");
+            // Vérifier la présence de l'identifiant unique "id"
+            if (item.containsKey("id") && item.get("id") instanceof Integer) {
+                int id = (int) item.get("id");
+                boolean success = service.supprimerElement(id, "id");
+                if (success) {
+                    tableElements.getItems().remove(item); // Mise à jour locale
+                    showAlert("Succès", "Élément supprimé avec succès !");
+                } else {
+                    showAlert("Erreur", "Impossible de supprimer l'élément.");
+                }
             } else {
-                showAlert("Erreur", "Impossible de supprimer l'élément.");
+                showAlert("Erreur", "Élément invalide ou identifiant manquant.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -112,12 +124,17 @@ public class GenericCollectionController {
 
     private void updateElementInDatabase(Map<String, Object> rowData) {
         try (ServiceCollection service = new ServiceCollection(nomCollection)) {
-            int id = (int) rowData.get("id");
-            boolean success = service.updateElement(id, "id", rowData);
-            if (success) {
-                showAlert("Succès", "Élément mis à jour avec succès !");
+            // Vérifier la présence de l'identifiant unique "id"
+            if (rowData.containsKey("id") && rowData.get("id") instanceof Integer) {
+                int id = (int) rowData.get("id");
+                boolean success = service.updateElement(id, "id", rowData);
+                if (success) {
+                    //showAlert("Succès", "Élément mis à jour avec succès !");
+                } else {
+                    showAlert("Erreur", "Impossible de mettre à jour l'élément.");
+                }
             } else {
-                showAlert("Erreur", "Impossible de mettre à jour l'élément.");
+                showAlert("Erreur", "Élément invalide ou identifiant manquant.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -127,26 +144,63 @@ public class GenericCollectionController {
 
     @FXML
     private void handleAjouterElement() {
-        TextInputDialog dialog = new TextInputDialog();
+        Dialog<Map<String, String>> dialog = new Dialog<>();
         dialog.setTitle("Ajouter un élément");
-        dialog.setHeaderText("Ajouter un nouvel élément à la collection : " + nomCollection);
-        dialog.setContentText("Entrez les valeurs (séparées par des virgules) :");
+        dialog.setHeaderText("Ajoutez un nouvel élément à la collection : " + nomCollection);
+
+        // Configurer les champs d'entrée
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        List<TextField> textFields = new ArrayList<>();
+        List<String> attributsSansIDEtDate = new ArrayList<>();
+
+        try (ServiceCollection service = new ServiceCollection(nomCollection)) {
+            // Récupérer les attributs et exclure 'id' et 'dateAjout'
+            List<String> attributs = service.getAttributs();
+            for (String attribut : attributs) {
+                if (!attribut.equalsIgnoreCase("id") && !attribut.equalsIgnoreCase("dateAjout")) {
+                    attributsSansIDEtDate.add(attribut);
+
+                    Label label = new Label(attribut + ":");
+                    TextField textField = new TextField();
+                    textField.setPromptText("Valeur");
+
+                    textFields.add(textField);
+                    grid.add(label, 0, attributsSansIDEtDate.size() - 1); // Ajouter le label
+                    grid.add(textField, 1, attributsSansIDEtDate.size() - 1); // Ajouter le champ de saisie
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors du chargement des attributs : " + e.getMessage());
+            return;
+        }
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                Map<String, String> newElement = new HashMap<>();
+                for (int i = 0; i < attributsSansIDEtDate.size(); i++) {
+                    newElement.put(attributsSansIDEtDate.get(i), textFields.get(i).getText());
+                }
+                return newElement;
+            }
+            return null;
+        });
 
         dialog.showAndWait().ifPresent(values -> {
             try (ServiceCollection service = new ServiceCollection(nomCollection)) {
-                String[] valeurs = values.split(",");
-                List<String> attributs = service.getAttributs();
-
-                // Associer chaque valeur à un attribut
-                Map<String, Object> element = new HashMap<>();
-                for (int i = 0; i < attributs.size() && i < valeurs.length; i++) {
-                    element.put(attributs.get(i), valeurs[i]);
-                }
+                Map<String, Object> element = new HashMap<>(values);
 
                 // Ajouter l'élément dans la base
                 if (service.ajouterElement(element)) {
                     showAlert("Succès", "Élément ajouté avec succès !");
-                    tableElements.getItems().add(element); // Mise à jour locale
+                    refreshTable(); // Rafraîchir les données pour inclure le nouvel élément
                 } else {
                     showAlert("Erreur", "Impossible d'ajouter l'élément.");
                 }
@@ -157,17 +211,34 @@ public class GenericCollectionController {
         });
     }
 
+    private void refreshTable() {
+        try (ServiceCollection service = new ServiceCollection(nomCollection)) {
+            // Récupérer les données mises à jour depuis la base de données
+            List<Map<String, Object>> updatedData = service.readAll();
+
+            // Effacer les anciennes données de la TableView
+            tableElements.getItems().clear();
+
+            // Ajouter les nouvelles données
+            tableElements.getItems().addAll(updatedData);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors du rafraîchissement de la table : " + e.getMessage());
+        }
+    }
+
     @FXML
     private void handleRetourDashboard() {
         try {
+            Stage currentStage = (Stage) tableElements.getScene().getWindow();
             Parent root = FXMLLoader.load(getClass().getResource("/Dashboard.fxml"));
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Dashboard");
-            stage.show();
+            Scene scene = new Scene(root);
+            currentStage.setScene(scene);
+            currentStage.setTitle("Dashboard");
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible de revenir au Dashboard.");
+            showAlert("Erreur", "Impossible de revenir au Dashboard : " + e.getMessage());
         }
     }
 

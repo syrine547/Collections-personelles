@@ -28,12 +28,15 @@ public class ServiceCollection implements AutoCloseable {
             throw new IllegalArgumentException("L'élément à ajouter ne peut pas être vide.");
         }
 
-        StringBuilder query = new StringBuilder("INSERT INTO Collections.`" + nomTable + "` (");
+        StringBuilder query = new StringBuilder("INSERT INTO `" + nomTable + "` (");
         StringBuilder values = new StringBuilder("VALUES (");
 
+        // Construire la requête en ignorant 'id' et 'dateAjout'
         for (String colonne : element.keySet()) {
-            query.append("`").append(colonne).append("`, ");
-            values.append("?, ");
+            if (!colonne.equalsIgnoreCase("id") && !colonne.equalsIgnoreCase("dateAjout")) {
+                query.append("`").append(colonne).append("`, ");
+                values.append("?, ");
+            }
         }
 
         query.delete(query.length() - 2, query.length());
@@ -43,8 +46,10 @@ public class ServiceCollection implements AutoCloseable {
 
         try (PreparedStatement pre = con.prepareStatement(query.toString())) {
             int i = 1;
-            for (Object valeur : element.values()) {
-                pre.setObject(i++, valeur);
+            for (String colonne : element.keySet()) {
+                if (!colonne.equalsIgnoreCase("id") && !colonne.equalsIgnoreCase("dateAjout")) {
+                    pre.setObject(i++, element.get(colonne));
+                }
             }
             return pre.executeUpdate() > 0;
         }
@@ -148,10 +153,6 @@ public class ServiceCollection implements AutoCloseable {
         }
     }
 
-    public void mettreAJourAttributs(String nomCollection, ObservableList<Map<String, String>> attributs) throws SQLException {
-        // Logique pour mettre à jour les colonnes dans la base de données
-    }
-
     public void mettreAJourObjectif(String nomCollection, int nouvelObjectif) throws SQLException {
         String query = "UPDATE Collections.typesExistants SET objectif_total = ? WHERE nomType = ?";
         try (PreparedStatement pstmt = con.prepareStatement(query)) {
@@ -191,34 +192,47 @@ public class ServiceCollection implements AutoCloseable {
         }
         return attributs;
     }
-
     public void synchroniserAttributs(String nomTable, ObservableList<Map<String, String>> attributs) throws SQLException {
-        // Récupérer les attributs actuels de la base de données
+        // Récupérer les attributs existants dans la table
         List<Map<String, String>> attributsExistants = getAttributsAvecTypes();
 
-        // Supprimer les colonnes inexistantes
-        for (Map<String, String> existant : attributsExistants) {
-            if (attributs.stream().noneMatch(a -> a.get("nom").equals(existant.get("nom")))) {
-                String query = "ALTER TABLE Collections.`" + nomTable + "` DROP COLUMN `" + existant.get("nom") + "`";
-                try (Statement stmt = con.createStatement()) {
+        try (Statement stmt = con.createStatement()) {
+            // Supprimer les colonnes inexistantes
+            for (Map<String, String> existant : attributsExistants) {
+                boolean existeEncore = attributs.stream().anyMatch(a -> a.get("nom").equals(existant.get("nom")));
+                if (!existeEncore) {
+                    String query = "ALTER TABLE `" + nomTable + "` DROP COLUMN `" + existant.get("nom") + "`";
                     stmt.executeUpdate(query);
                 }
             }
-        }
 
-        // Ajouter ou modifier les colonnes
-        for (Map<String, String> attribut : attributs) {
-            if (attributsExistants.stream().noneMatch(e -> e.get("nom").equals(attribut.get("nom")))) {
-                // Ajouter une nouvelle colonne
-                String query = "ALTER TABLE Collections.`" + nomTable + "` ADD COLUMN `" + attribut.get("nom") + "` " + attribut.get("type");
-                try (Statement stmt = con.createStatement()) {
-                    stmt.executeUpdate(query);
+            // Ajouter ou modifier les colonnes
+            for (Map<String, String> attribut : attributs) {
+                String nomAttribut = attribut.get("nom");
+                String typeAttribut = attribut.get("type");
+
+                if (nomAttribut == null || typeAttribut == null) {
+                    throw new IllegalArgumentException("Nom ou type d'attribut manquant");
                 }
-            } else {
-                // Modifier une colonne existante
-                String query = "ALTER TABLE Collections.`" + nomTable + "` MODIFY COLUMN `" + attribut.get("nom") + "` " + attribut.get("type");
-                try (Statement stmt = con.createStatement()) {
+
+                // Vérifier si l'attribut existe déjà
+                boolean existe = attributsExistants.stream()
+                        .anyMatch(e -> e.get("nom").equals(nomAttribut));
+
+                if (!existe) {
+                    // Ajouter une nouvelle colonne
+                    String query = "ALTER TABLE `" + nomTable + "` ADD COLUMN `" + nomAttribut + "` " + typeAttribut;
                     stmt.executeUpdate(query);
+                } else {
+                    // Modifier une colonne existante si le type a changé
+                    for (Map<String, String> existant : attributsExistants) {
+                        if (existant.get("nom").equals(nomAttribut)) {
+                            if (!existant.get("type").equals(typeAttribut)) {
+                                String query = "ALTER TABLE `" + nomTable + "` MODIFY COLUMN `" + nomAttribut + "` " + typeAttribut;
+                                stmt.executeUpdate(query);
+                            }
+                        }
+                    }
                 }
             }
         }
