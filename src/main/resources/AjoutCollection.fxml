@@ -4,32 +4,37 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="Controllers.AjoutCollectionController">
+            fx:controller="Controllers.AjoutCollectionController" style="-fx-background-color: #f7f7f7;">
 
+    <!-- Section supérieure : Titre et description -->
     <top>
-        <VBox spacing="10" alignment="CENTER">
-            <!-- Nom de collection -->
-            <TextField fx:id="fieldNomCollection" promptText="Nom de la nouvelle collection" />
-            <TextArea fx:id="fieldDescription" promptText="Description de la collection (optionnelle)" />
+        <VBox spacing="15" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #2c3e50;">
+            <Label text="Créer une Nouvelle Collection" style="-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;" />
+            <TextField fx:id="fieldNomCollection" promptText="Nom de la nouvelle collection" style="-fx-pref-width: 300;" />
+            <TextArea fx:id="fieldDescription" promptText="Description de la collection (optionnelle)" style="-fx-pref-width: 300; -fx-pref-height: 100;" />
         </VBox>
     </top>
 
+    <!-- Section centrale : Objectif et attributs -->
     <center>
-        <VBox spacing="10" alignment="CENTER">
-            <Label text="Attributs de la collection" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-
-            <HBox spacing="10" alignment="CENTER">
-                <Label text="Objectif Total : " />
-                <TextField fx:id="fieldObjectifTotal" promptText="Exemple : 100" />
+        <VBox spacing="15" alignment="CENTER" style="-fx-padding: 20;">
+            <HBox spacing="15" alignment="CENTER" style="-fx-pref-width: 300;">
+                <Label text="Objectif Total :" style="-fx-text-fill: #2c3e50;" />
+                <TextField fx:id="fieldObjectifTotal" promptText="Exemple : 100" style="-fx-pref-width: 150;" />
             </HBox>
+            <Label text="Attributs de la Collection" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+            <VBox fx:id="vboxAttributs" spacing="10" style="-fx-padding: 10; -fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-radius: 5;">
+                <!-- Les attributs seront ajoutés ici -->
+            </VBox>
 
-            <VBox fx:id="vboxAttributs" spacing="10"> </VBox> <Button text="Ajouter un attribut" onAction="#handleAjouterAttribut" />
+            <Button text="Ajouter un attribut" onAction="#handleAjouterAttribut" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;" />
         </VBox>
     </center>
 
+    <!-- Section inférieure : Bouton pour créer la collection -->
     <bottom>
-        <HBox alignment="CENTER">
-            <Button text="Créer la collection" onAction="#handleCreerCollection" />
+        <HBox alignment="CENTER" style="-fx-padding: 10; -fx-background-color: #ecf0f1;">
+            <Button text="Créer la collection" onAction="#handleCreerCollection" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20;" />
         </HBox>
     </bottom>
 </BorderPane>
