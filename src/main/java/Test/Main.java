@@ -10,11 +10,11 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Charger le fichier FXML de GestionLivres
-        Parent root = FXMLLoader.load(getClass().getResource("/Dashboard.fxml"));
+        // Charger le fichier FXML d'authentification
+        Parent root = FXMLLoader.load(getClass().getResource("/Main.fxml"));
 
         // Configurer la scène principale
-        primaryStage.setTitle("Dashboard");
+        primaryStage.setTitle("Collection Manager");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
     }
