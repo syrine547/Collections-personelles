@@ -1,26 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="Controllers.ModifierCollectionController">
-    <Label text="Modifier la Collection" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
-    <TextField fx:id="fieldNomCollection" promptText="Nom de la collection" />
-    <TextField fx:id="fieldObjectifTotal" promptText="Objectif total" />
-    <TableView fx:id="tableAttributs" prefHeight="200">
+<VBox spacing="15" alignment="CENTER" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="Controllers.ModifierCollectionController" style="-fx-padding: 20; -fx-background-color: #f7f7f7;">
+
+    <!-- Titre principal -->
+    <Label text="Modifier la Collection" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+
+    <!-- Champs de saisie -->
+    <VBox spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+        <TextField fx:id="fieldNomCollection" promptText="Nom de la collection" style="-fx-pref-width: 300;" />
+        <TextField fx:id="fieldObjectifTotal" promptText="Objectif total" style="-fx-pref-width: 300;" />
+    </VBox>
+
+    <!-- Table des attributs -->
+    <TableView fx:id="tableAttributs" prefHeight="250" style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-radius: 5;">
         <columns>
-            <TableColumn text="Nom Attribut" fx:id="colNomAttribut" />
-            <TableColumn text="Type Attribut" fx:id="colTypeAttribut" />
+            <TableColumn text="Nom Attribut" fx:id="colNomAttribut" style="-fx-text-fill: #34495e;" />
+            <TableColumn text="Type Attribut" fx:id="colTypeAttribut" style="-fx-text-fill: #34495e;" />
         </columns>
     </TableView>
-    <HBox spacing="10">
-        <Button text="Ajouter un attribut" onAction="#handleAjouterAttribut" />
-        <Button text="Supprimer un attribut" onAction="#handleSupprimerAttribut" />
-    </HBox>
-    <Button text="Enregistrer les modifications" onAction="#handleEnregistrerModifications" style="-fx-background-color: #2ecc71; -fx-text-fill: white;" />
-</VBox>
 
+    <!-- Boutons d'actions sur les attributs -->
+    <HBox spacing="15" alignment="CENTER" style="-fx-padding: 10;">
+        <Button text="Ajouter un attribut" onAction="#handleAjouterAttribut" style="-fx-background-color: #3498db; -fx-text-fill: white;" />
+        <Button text="Supprimer un attribut" onAction="#handleSupprimerAttribut" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
+    </HBox>
+
+    <!-- Bouton pour enregistrer -->
+    <Button text="Enregistrer les modifications" onAction="#handleEnregistrerModifications"
+            style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20;" />
+</VBox>

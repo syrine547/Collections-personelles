@@ -8,6 +8,7 @@ CREATE TABLE Collections.typesExistants (
     OBJECTIF_TOTAL INT NOT NULL DEFAULT 0
 );
 
+<<<<<<< HEAD
 INSERT INTO utilisateurs (id) 
 VALUES (12);
 SELECT * FROM utilisateurs;
@@ -24,6 +25,23 @@ DROP TABLE Collections.utilisateurs;
 Describe TABLE Collections.logss;
 ALTER TABLE Collections.logss DROP FOREIGN KEY logs_ibfk_1; 
 ALTER TABLE Collections.logss ADD CONSTRAINT logs_ibfk_1 FOREIGN KEY (id) REFERENCES Collections.utilisateurs(id) ON DELETE CASCADE;
+=======
+CREATE TABLE Collections.users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    nom VARCHAR(255),
+    prenom VARCHAR(255),
+    date_naissance DATE,
+    sexe ENUM('Homme', 'Femme'),
+    adresse VARCHAR(255),
+    telephone VARCHAR(20),
+    profession VARCHAR(255),
+    nationalite VARCHAR(255),
+    langues TEXT
+);
+>>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
 
 select * from Collections.typesExistants;
 USE Collections;

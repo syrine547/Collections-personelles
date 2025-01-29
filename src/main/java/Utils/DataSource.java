@@ -7,7 +7,11 @@ public class DataSource {
     private static DataSource data;
     private final String url = "jdbc:mysql://localhost:3306/Collections"; // Première base de données
     private final String user = "root";
+<<<<<<< HEAD
     private final String pass = "2807";
+=======
+    private final String pass = "MySQL123!";
+>>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
 
     private DataSource() {
         try {
@@ -51,7 +55,11 @@ public class DataSource {
      * @return true si les identifiants sont valides.
      */
     public static boolean checkLogin(String username, String password) {
+<<<<<<< HEAD
         String query = "SELECT * FROM users WHERE (username = ? OR email = ?) AND password = ?";
+=======
+        String query = "SELECT * FROM Collections.users WHERE (username = ? OR email = ?) AND password = ?";
+>>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
         try (Connection conn = DataSource.getInstance().getCon(); // Accès à la connexion via l'instance Singleton
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
@@ -75,7 +83,11 @@ public class DataSource {
      * @return true si l'email existe.
      */
     public static boolean checkEmailExists(String email) {
+<<<<<<< HEAD
         String query = "SELECT COUNT(*) FROM users WHERE email = ?";
+=======
+        String query = "SELECT COUNT(*) FROM Collections.users WHERE email = ?";
+>>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
         try (Connection conn = DataSource.getInstance().getCon(); // Accès à la connexion via l'instance Singleton
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
@@ -100,7 +112,11 @@ public class DataSource {
      * @return true si la mise à jour a réussi.
      */
     public boolean updateEmail(String username, String newEmail) {
+<<<<<<< HEAD
         String query = "UPDATE users SET email = ? WHERE username = ?";
+=======
+        String query = "UPDATE Collections.users SET email = ? WHERE username = ?";
+>>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
         try (Connection conn = getCon();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 

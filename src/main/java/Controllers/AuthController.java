@@ -77,7 +77,10 @@ public class AuthController {
 
         // Vérification de l'utilisateur et du mot de passe dans la base de données
         if (checkLogin(username, password)) {
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
             // Naviguer vers le Dashboard après l'authentification réussie
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/Dashboard.fxml")); // Charge le fichier FXML du Dashboard
@@ -85,7 +88,10 @@ public class AuthController {
 
                 // Obtenir la scène actuelle
                 Stage stage = (Stage) loginButton.getScene().getWindow(); // Récupère la fenêtre actuelle
+<<<<<<< HEAD
                 //Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow(); // Récupère la fenêtre actuelle
+=======
+>>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
                 stage.setScene(new Scene(root)); // Définit la nouvelle scène
                 stage.setTitle("Dashboard"); // Définit le titre de la fenêtre
                 stage.show(); // Affiche la nouvelle scène
