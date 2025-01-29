@@ -11,7 +11,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Charger le fichier FXML de GestionLivres
-        Parent root = FXMLLoader.load(getClass().getResource("/Dashboard.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/Main.fxml"));
 
         // Configurer la scène principale
         primaryStage.setTitle("Dashboard");

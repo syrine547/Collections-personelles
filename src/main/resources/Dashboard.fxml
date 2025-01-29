@@ -20,7 +20,7 @@
                 <Button text="Rafraîchir" style="-fx-background-color: #27ae60; -fx-text-fill: white;" onAction="#handleRefresh" />
                 <Button text="Ajouter une collection" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#handleAjouterCollection" />
                 <Button text="Profil" style="-fx-background-color: #1abc9c; -fx-text-fill: white;" onAction="#handleNavigateToProfil" />
-                <Button text="Déconnexion" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#handleLogout" />
+                <Button fx:id="Déconnexion" text="Déconnexion" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#handleLogout" />
             </HBox>
         </HBox>
     </top>

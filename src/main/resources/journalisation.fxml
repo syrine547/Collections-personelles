@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="Controllers.LogsController">
+    <top>
+        <Label text="Historique des Actions" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10;" />
+    </top>
+    <center>
+        <TableView fx:id="tableLogs">
+            <columns>
+                <TableColumn text="Utilisateur" fx:id="colUserId" />
+                <TableColumn text="Action" fx:id="colAction" />
+                <TableColumn text="Date" fx:id="colTimestamp" />
+            </columns>
+        </TableView>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER" spacing="15" style="-fx-padding: 10;">
+            <Button text="Retour au Dashboard" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#handleRetourDashboard" />
+        </HBox>
+    </bottom>
+</BorderPane>

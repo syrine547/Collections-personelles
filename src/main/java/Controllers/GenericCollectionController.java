@@ -1,5 +1,5 @@
 package Controllers;
-
+import Utils.DataSource;
 import Service.ServiceCollection;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
@@ -10,17 +10,12 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
-import javafx.scene.control.Alert;
-import java.util.List;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
-import java.util.Map;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ButtonType;
 import javafx.scene.layout.GridPane;
 import javafx.geometry.Insets;
 
@@ -28,7 +23,8 @@ public class GenericCollectionController {
 
     @FXML
     private TableView<Map<String, Object>> tableElements; // Pour afficher les données
-
+    @FXML
+    private Button log;
     private String nomCollection;
 
     public void setNomCollection(String nomCollection) {
@@ -110,6 +106,7 @@ public class GenericCollectionController {
                 if (success) {
                     tableElements.getItems().remove(item); // Mise à jour locale
                     showAlert("Succès", "Élément supprimé avec succès !");
+                    logAction("Suppression d'un élément", getCurrentUserId(), getCollectionId()); // Journalisation
                 } else {
                     showAlert("Erreur", "Impossible de supprimer l'élément.");
                 }
@@ -129,7 +126,7 @@ public class GenericCollectionController {
                 int id = (int) rowData.get("id");
                 boolean success = service.updateElement(id, "id", rowData);
                 if (success) {
-                    //showAlert("Succès", "Élément mis à jour avec succès !");
+                    logAction("Modification d'un élément", getCurrentUserId(), getCollectionId()); // Journalisation
                 } else {
                     showAlert("Erreur", "Impossible de mettre à jour l'élément.");
                 }
@@ -201,6 +198,7 @@ public class GenericCollectionController {
                 if (service.ajouterElement(element)) {
                     showAlert("Succès", "Élément ajouté avec succès !");
                     refreshTable(); // Rafraîchir les données pour inclure le nouvel élément
+                    logAction("Ajout d'un élément", getCurrentUserId(), getCollectionId()); // Journalisation
                 } else {
                     showAlert("Erreur", "Impossible d'ajouter l'élément.");
                 }
@@ -240,6 +238,56 @@ public class GenericCollectionController {
             e.printStackTrace();
             showAlert("Erreur", "Impossible de revenir au Dashboard : " + e.getMessage());
         }
+    }
+
+    @FXML
+    private void handleaffichelog() {
+        try {
+            Stage currentStage = (Stage) tableElements.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/journalisation.fxml"));
+            if (getClass().getResource("/journalisation.fxml") == null) {
+                throw new IOException("Fichier journalisation.fxml introuvable !"); }
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            currentStage.setScene(scene);
+            currentStage.setTitle("Journal");
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Impossible de naviguer vers le journal. Détails : " + e.getMessage());
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Le bouton 'log' est null. Vérifiez son ID dans le FXML.");
+        }
+    }
+
+    private void logAction(String action, Integer userId, Integer collectionId) {
+        String sql = "INSERT INTO logss (user_id, action, collection_id, timestamp) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
+        try (Connection connection = DataSource.getInstance().getCon();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, userId);
+            statement.setString(2, action);
+            if (collectionId != null) {
+                statement.setInt(3, collectionId);
+            } else {
+                statement.setNull(3, java.sql.Types.INTEGER);
+            }
+
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors de la journalisation de l'action : " + e.getMessage());
+        }
+    }
+
+    private Integer getCurrentUserId() {
+        // Remplacez ceci par la méthode réelle pour obtenir l'ID de l'utilisateur actuel
+        return 1; // Exemple : utilisateur fictif
+    }
+
+    private Integer getCollectionId() {
+        // Remplacez ceci par la méthode réelle pour obtenir l'ID de la collection actuelle
+        return 1; // Exemple : collection fictive
     }
 
     private void showAlert(String title, String content) {

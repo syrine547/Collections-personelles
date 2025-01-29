@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.AuthController" style="-fx-background-color: #f9f9f9;">
+   <children>
+      <!-- Header avec couleur -->
+      <Rectangle width="800.0" height="180.0" fill="#1e88e5" />
+
+      <!-- Titre -->
+      <Label layoutX="50.0" layoutY="50.0" text="Bienvenue sur notre plateforme Collection Manager" textFill="white">
+         <font>
+            <Font name="System Bold" size="30.0" />
+         </font>
+      </Label>
+      <Label layoutX="50.0" layoutY="100.0" text="Connectez-vous pour accéder à vos collections." textFill="white">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+
+      <!-- Formulaire -->
+      <VBox layoutX="250.0" layoutY="200.0" spacing="20.0" prefWidth="300.0" style="-fx-background-color: #ffffff; -fx-border-color: #ddd; -fx-border-width: 1; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 30;">
+         <!-- Champ Nom d'utilisateur -->
+         <TextField fx:id="usernameField" promptText="Nom d'utilisateur" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #bbb; -fx-padding: 10; -fx-font-size: 14px;" />
+
+         <!-- Champ Mot de passe -->
+         <PasswordField fx:id="passwordField" promptText="Mot de passe" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #bbb; -fx-padding: 10; -fx-font-size: 14px;" />
+
+         <!-- Bouton de Connexion -->
+         <Button fx:id="loginButton" text="Se connecter" style="-fx-background-color: #1e88e5; -fx-text-fill: white; -fx-background-radius: 15; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;" />
+
+         <!-- Bouton Mot de passe oublié -->
+         <Button fx:id="forgotPasswordButton" text="Mot de passe oublié ?" underline="true" style="-fx-background-color: transparent; -fx-text-fill: #1e88e5; -fx-font-size: 14px;" />
+      </VBox>
+
+      <!-- Bouton de création de compte -->
+      <Button fx:id="createAccountButton" layoutX="250.0" layoutY="470.0" text="Créer un compte" style="-fx-background-color: #424242; -fx-text-fill: white; -fx-background-radius: 15; -fx-font-size: 16px; -fx-padding: 10; -fx-font-weight: bold;" />
+   </children>
+</AnchorPane>

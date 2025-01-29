@@ -29,6 +29,10 @@ public class DashboardController {
 
     @FXML
     private ComboBox<String> comboBoxCollections;
+
+    @FXML
+    private Button Déconnexion;
+
     @FXML
     private VBox vBoxCharts;
     @FXML
@@ -358,6 +362,20 @@ public class DashboardController {
 
     @FXML
     private void handleLogout(ActionEvent event) {
-        System.out.println("Déconnexion...");
+        try {
+            // Charger le fichier FXML du Dashboard
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Main.fxml"));
+            Parent root = loader.load();
+
+            // Obtenir la scène actuelle via le bouton Déconnexion
+            Stage stage = (Stage) Déconnexion.getScene().getWindow();  // Utiliser le bouton Déconnexion pour obtenir la fenêtre
+            stage.setScene(new Scene(root));  // Définit la nouvelle scène
+            stage.setTitle("Authentification");  // Définit le titre de la fenêtre
+            stage.show();  // Affiche la nouvelle scène
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Vous pouvez ajouter un message d'erreur si nécessaire
+            //showAlert("Erreur", "Erreur lors de la navigation", "Impossible d'ouvrir le Dashboard.", Alert.AlertType.ERROR);
+        }
     }
 }

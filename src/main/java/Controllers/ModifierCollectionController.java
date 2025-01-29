@@ -1,5 +1,4 @@
 package Controllers;
-
 import Service.ServiceCollection;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
