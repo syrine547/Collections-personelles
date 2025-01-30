@@ -1,7 +1,8 @@
 package Controllers;
 
+import Controllers.AjoutCollectionController;
+
 import Utils.DataSource;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -20,34 +21,12 @@ import javafx.scene.Parent;
 import javafx.stage.Stage;
 
 import static Utils.DataSource.checkEmailExists;
-import static Utils.DataSource.checkLogin;
 
 public class AuthController {
     private final AuthService authService;
 
     @FXML
-    private Button btn;
-
-    @FXML
-    private TextField txt;
-
-    @FXML
     private Button forgotPasswordButton;
-
-    public AuthController() {
-        this.authService = new AuthService();
-    }
-
-    // Méthode pour ajouter un utilisateur avec tous les champs
-    public boolean addUser(String username, String password, String email, String nom, String prenom, String dateNaissance, String adresse, String telephone, String profession, String nationalite, String langues) {
-        // Ajoute un utilisateur avec tous les champs dans la base de données
-        return authService.addUser(username, password, email, nom, prenom, dateNaissance, adresse, telephone, profession, nationalite, langues);
-    }
-
-    // Méthode pour supprimer un utilisateur
-    public boolean deleteUser(String username) {
-        return authService.deleteUser(username);
-    }
 
     @FXML
     private TextField usernameField;
@@ -61,54 +40,61 @@ public class AuthController {
     @FXML
     private Button createAccountButton;
 
+    public AuthController() {
+        this.authService = new AuthService();
+    }
+
     @FXML
     public void initialize() {
         loginButton.setOnAction(e -> handleLogin());
-
-        // Action pour le bouton "Mot de passe oublié"
         forgotPasswordButton.setOnAction(e -> onForgotPasswordClick());
-
         createAccountButton.setOnAction(e -> onCreateAccountClick());
     }
 
+    // Méthode pour gérer la connexion de l'utilisateur
     private void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
-        // Vérification de l'utilisateur et du mot de passe dans la base de données
-        if (checkLogin(username, password)) {
-<<<<<<< HEAD
+        String loginResult = DataSource.checkLogin(username, password);
+        if (loginResult != null) {
+            String[] parts = loginResult.split(":");
+            int userId = Integer.parseInt(parts[0]);
+            String role = parts[1];
 
-=======
->>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
-            // Naviguer vers le Dashboard après l'authentification réussie
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/Dashboard.fxml")); // Charge le fichier FXML du Dashboard
-                Parent root = loader.load();
-
-                // Obtenir la scène actuelle
-                Stage stage = (Stage) loginButton.getScene().getWindow(); // Récupère la fenêtre actuelle
-<<<<<<< HEAD
-                //Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow(); // Récupère la fenêtre actuelle
-=======
->>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
-                stage.setScene(new Scene(root)); // Définit la nouvelle scène
-                stage.setTitle("Dashboard"); // Définit le titre de la fenêtre
-                stage.show(); // Affiche la nouvelle scène
-            } catch (IOException e) {
-                e.printStackTrace();
-                showAlert("Erreur", "Erreur lors de la navigation", "Impossible d'ouvrir le Dashboard.", Alert.AlertType.ERROR);
+            if (userId == 0) {
+                showAlert("Erreur", "Erreur","L'utilisateur spécifié n'existe pas.", Alert.AlertType.INFORMATION);
+                return;
             }
+
+            showAlert("Connexion réussie", "Bienvenue " + username, "Vous êtes connecté en tant que " + role, Alert.AlertType.INFORMATION);
+            navigateToDashboard("Dashboard.fxml", userId);
         } else {
-            showAlert(
-                    "Erreur de connexion", // Titre
-                    "Échec de la connexion", // En-tête
-                    "Nom d'utilisateur ou mot de passe incorrect.", // Contenu
-                    Alert.AlertType.ERROR // Type d'alerte
-            );
+            showAlert("Erreur de connexion", "Nom d'utilisateur ou mot de passe incorrect.", "", Alert.AlertType.ERROR);
         }
     }
 
+    // Méthode pour naviguer vers le tableau de bord
+    private void navigateToDashboard(String dashboardFxml, int userId) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
+            Parent root = loader.load();
+            DashboardController controller = loader.getController();
+            if (controller != null) {
+                controller.setUserId(userId);  // Appelle setUserId sur le contrôleur
+            }
+
+            Stage stage = (Stage) usernameField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Dashboard");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Navigation échouée", "Impossible de naviguer vers le Dashboard.", Alert.AlertType.ERROR);
+        }
+    }
+
+    // Méthode pour afficher des alertes
     private void showAlert(String title, String header, String content, Alert.AlertType alertType) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
@@ -117,54 +103,37 @@ public class AuthController {
         alert.showAndWait();
     }
 
+    // Méthode pour gérer la réinitialisation du mot de passe
     @FXML
     private void onForgotPasswordClick() {
-        // Créez une boîte de dialogue pour demander l'email
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Réinitialisation de mot de passe");
         dialog.setHeaderText("Mot de passe oublié");
         dialog.setContentText("Veuillez entrer votre adresse e-mail :");
 
-        // Récupérez l'email saisi par l'utilisateur
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(email -> {
-            // Vérifiez si l'email existe dans la base de données
             if (checkEmailExists(email)) {
-                // Si l'email existe, envoyez un lien de réinitialisation
                 sendPasswordResetEmail(email);
-                showAlert(
-                        "Réinitialisation de mot de passe",
-                        "Email envoyé",
-                        "Un email de réinitialisation a été envoyé à " + email,
-                        Alert.AlertType.INFORMATION
-                );
+                showAlert("Réinitialisation de mot de passe", "Email envoyé", "Un email de réinitialisation a été envoyé à " + email, Alert.AlertType.INFORMATION);
             } else {
-                // Sinon, affichez un message d'erreur
-                showAlert(
-                        "Erreur",
-                        "Email introuvable",
-                        "L'adresse email " + email + " n'est pas enregistrée.",
-                        Alert.AlertType.ERROR
-                );
+                showAlert("Erreur", "Email introuvable", "L'adresse email " + email + " n'est pas enregistrée.", Alert.AlertType.ERROR);
             }
         });
     }
 
-    public class EmailService {
+    // Classe interne pour envoyer un email
+    public static class EmailService {
+        private static final String SENDER_EMAIL = "votre_email@gmail.com"; // Remplacez par votre email
+        private static final String SENDER_PASSWORD = "votre_mot_de_passe"; // Remplacez par votre mot de passe d'application
 
-        private static final String SENDER_EMAIL = "votre_email@gmail.com"; // Votre adresse email
-        private static final String SENDER_PASSWORD = "votre_mot_de_passe"; // Votre mot de passe d'email
-
-        // Méthode pour envoyer un email
         public static void sendPasswordResetEmail(String recipientEmail) {
-            // Configuration des propriétés pour Gmail
             Properties properties = new Properties();
             properties.put("mail.smtp.auth", "true");
             properties.put("mail.smtp.starttls.enable", "true");
             properties.put("mail.smtp.host", "smtp.gmail.com");
             properties.put("mail.smtp.port", "587");
 
-            // Authentification avec l'email de l'expéditeur
             Session session = Session.getInstance(properties, new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
@@ -173,7 +142,6 @@ public class AuthController {
             });
 
             try {
-                // Création du message
                 Message message = new MimeMessage(session);
                 message.setFrom(new InternetAddress(SENDER_EMAIL));
                 message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
@@ -181,33 +149,30 @@ public class AuthController {
                 message.setText("Bonjour,\n\nCliquez sur le lien suivant pour réinitialiser votre mot de passe :\n\n" +
                         "https://votre_site.com/reinitialisation-mot-de-passe?email=" + recipientEmail);
 
-                // Envoi de l'email
                 Transport.send(message);
-
                 System.out.println("Email de réinitialisation envoyé à : " + recipientEmail);
-
             } catch (MessagingException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    /**
-     * Simule l'envoi d'un email de réinitialisation de mot de passe.
-     * @param email l'adresse email de l'utilisateur
-     */
+    // Méthode pour envoyer l'email de réinitialisation
     private void sendPasswordResetEmail(String email) {
-        // Appel à la méthode d'envoi d'email
         EmailService.sendPasswordResetEmail(email);
     }
 
+    private boolean addUser(String username, String password, String email, String nom, String prenom, String dateNaissance, String adresse, String telephone, String profession, String nationalite, String langues) {
+        // Appeler la méthode addUser de AuthService pour ajouter un utilisateur
+        return authService.addUser(username, password, email, nom, prenom, dateNaissance, adresse, telephone, profession, nationalite, langues);
+    }
+
+    // Méthode pour créer un compte
     private void onCreateAccountClick() {
-        // Boîte de dialogue pour entrer les informations du nouvel utilisateur
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Créer un compte");
         dialog.setHeaderText("Remplissez les informations pour créer un nouveau compte.");
 
-        // Champs pour les données utilisateur
         TextField usernameField = new TextField();
         usernameField.setPromptText("Nom d'utilisateur");
 
@@ -217,6 +182,7 @@ public class AuthController {
         TextField emailField = new TextField();
         emailField.setPromptText("Adresse email");
 
+        // Additional fields
         TextField nomField = new TextField();
         nomField.setPromptText("Nom");
 
@@ -224,13 +190,13 @@ public class AuthController {
         prenomField.setPromptText("Prénom");
 
         TextField dateNaissanceField = new TextField();
-        dateNaissanceField.setPromptText("Date de naissance (ex: 01/01/2000)");
+        dateNaissanceField.setPromptText("Date de naissance");
 
         TextField adresseField = new TextField();
         adresseField.setPromptText("Adresse");
 
         TextField telephoneField = new TextField();
-        telephoneField.setPromptText("Numéro de téléphone");
+        telephoneField.setPromptText("Téléphone");
 
         TextField professionField = new TextField();
         professionField.setPromptText("Profession");
@@ -238,14 +204,12 @@ public class AuthController {
         TextField nationaliteField = new TextField();
         nationaliteField.setPromptText("Nationalité");
 
-        TextArea languesField = new TextArea();
+        TextField languesField = new TextField();
         languesField.setPromptText("Langues parlées");
 
-        // Ajouter les champs dans une VBox
-        VBox vbox = new VBox(10); // Espacement entre les champs
+        VBox vbox = new VBox(10);
         vbox.getChildren().addAll(usernameField, passwordField, emailField, nomField, prenomField, dateNaissanceField, adresseField, telephoneField, professionField, nationaliteField, languesField);
 
-        // Définir le contenu de la boîte de dialogue
         dialog.getDialogPane().setContent(vbox);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
@@ -264,38 +228,19 @@ public class AuthController {
             String nationalite = nationaliteField.getText();
             String langues = languesField.getText();
 
-            // Vérifiez que tous les champs sont remplis
-            if (username.isEmpty() || password.isEmpty() || email.isEmpty() || nom.isEmpty() || prenom.isEmpty() || dateNaissance.isEmpty() || adresse.isEmpty() || telephone.isEmpty() || profession.isEmpty() || nationalite.isEmpty()) {
-                showAlert(
-                        "Erreur",
-                        "Champs vides",
-                        "Veuillez remplir tous les champs.",
-                        Alert.AlertType.ERROR
-                );
+            // Vérifiez si les champs sont remplis
+            if (username.isEmpty() || password.isEmpty() || email.isEmpty() || nom.isEmpty() || prenom.isEmpty() || dateNaissance.isEmpty() || adresse.isEmpty() || telephone.isEmpty() || profession.isEmpty() || nationalite.isEmpty() || langues.isEmpty()) {
+                showAlert("Erreur", "Champs vides", "Veuillez remplir tous les champs.", Alert.AlertType.ERROR);
                 return;
             }
 
-            // Ajout de l'utilisateur dans la base de données
+            // Créez un utilisateur
             boolean isAdded = addUser(username, password, email, nom, prenom, dateNaissance, adresse, telephone, profession, nationalite, langues);
             if (isAdded) {
-                showAlert(
-                        "Succès",
-                        "Compte créé",
-                        "Le compte pour " + username + " a été créé avec succès.",
-                        Alert.AlertType.INFORMATION
-                );
+                showAlert("Succès", "Compte créé", "Le compte a été créé avec succès.", Alert.AlertType.INFORMATION);
             } else {
-                showAlert(
-                        "Erreur",
-                        "Échec de création",
-                        "Une erreur est survenue lors de la création du compte.",
-                        Alert.AlertType.ERROR
-                );
+                showAlert("Erreur", "Échec de création", "Une erreur est survenue lors de la création du compte.", Alert.AlertType.ERROR);
             }
         }
-    }
-
-    public static void main(String[] args) {
-        EmailService.sendPasswordResetEmail("Radhouenemonia@gmail.com");
     }
 }

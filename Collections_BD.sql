@@ -7,11 +7,15 @@ CREATE TABLE Collections.typesExistants (
     dateAjout TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     OBJECTIF_TOTAL INT NOT NULL DEFAULT 0
 );
+UPDATE Collections.typesExistants
+SET user_id = 1  -- Remplacez par une valeur valide
+WHERE user_id IS NULL;
 
-<<<<<<< HEAD
-INSERT INTO utilisateurs (id) 
-VALUES (12);
-SELECT * FROM utilisateurs;
+
+
+ALTER TABLE Collections.typesExistants 
+modify COLUMN user_id INT not null,
+ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES Collections.users(id) ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS Collections.logss (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -21,38 +25,8 @@ CREATE TABLE IF NOT EXISTS Collections.logss (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Collections.users(id) ON DELETE CASCADE
 );
-DROP TABLE Collections.utilisateurs;
-Describe TABLE Collections.logss;
-ALTER TABLE Collections.logss DROP FOREIGN KEY logs_ibfk_1; 
-ALTER TABLE Collections.logss ADD CONSTRAINT logs_ibfk_1 FOREIGN KEY (id) REFERENCES Collections.utilisateurs(id) ON DELETE CASCADE;
-=======
+
 CREATE TABLE Collections.users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    nom VARCHAR(255),
-    prenom VARCHAR(255),
-    date_naissance DATE,
-    sexe ENUM('Homme', 'Femme'),
-    adresse VARCHAR(255),
-    telephone VARCHAR(20),
-    profession VARCHAR(255),
-    nationalite VARCHAR(255),
-    langues TEXT
-);
->>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
-
-select * from Collections.typesExistants;
-USE Collections;
-SHOW TABLES;
-
-select * from Collections.Magasine;
-
-
-select * from users;
-
-CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -66,3 +40,13 @@ CREATE TABLE users (
     nationalite VARCHAR(255),
     langues TEXT
 );
+
+ALTER TABLE Collections.users 
+ADD COLUMN role ENUM('admin', 'user') DEFAULT 'user';
+
+describe Collections.typesExistants;
+select * from Collections.typesExistants;
+select * from Collections.users;
+
+USE Collections;
+SHOW TABLES;

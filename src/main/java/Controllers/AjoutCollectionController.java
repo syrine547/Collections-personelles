@@ -5,14 +5,14 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+
 import javafx.scene.Node;
 import Utils.DataSource;
 
 public class AjoutCollectionController {
+
+    private int userId;  // Déclarer la variable userId
 
     @FXML
     private VBox vboxAttributs;
@@ -22,6 +22,11 @@ public class AjoutCollectionController {
     private TextArea fieldDescription;
     @FXML
     private TextField fieldObjectifTotal;
+
+    // Setter pour définir l'ID de l'utilisateur
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
     @FXML
     private void handleAjouterAttribut() {
@@ -99,15 +104,31 @@ public class AjoutCollectionController {
         try (Connection con = DataSource.getInstance().getCon();
              Statement stmt = con.createStatement()) {
 
+            // Vérifier si l'utilisateur existe dans la table `users`
+            System.out.println("userId: " + userId);  // Pour vérifier la valeur de userId
+            String checkUserSQL = "SELECT COUNT(*) FROM users WHERE id = ?";
+            try (PreparedStatement checkStmt = con.prepareStatement(checkUserSQL)) {
+                checkStmt.setInt(1, userId);
+                ResultSet rs = checkStmt.executeQuery();
+                if (rs.next() && rs.getInt(1) == 0) {
+                    System.out.println("userId: " + userId);  // Pour vérifier la valeur de userId
+
+                    showAlert("Erreur", "L'utilisateur spécifié n'existe pas.");
+                    return;
+                }
+            }
+
+            // Créer la table `Collections`
             stmt.executeUpdate(sql.toString()); // Utiliser executeUpdate pour les requêtes DDL
 
-            String insertSQL = "INSERT INTO Collections.typesExistants (nomType, description, objectif_total) VALUES (?, ?, ?)";
-            try (PreparedStatement pre = con.prepareStatement(insertSQL)) {
-                pre.setString(1, nomCollection);
-                pre.setString(2, description);
-                pre.setInt(3, objectifTotal);
-                pre.executeUpdate();
-            }
+            // Insérer dans `typesExistants` avec l'ID utilisateur
+            String query = "INSERT INTO Collections.typesExistants (nomType, description, objectif_total, user_id) VALUES (?, ?, ?, ?)";
+            PreparedStatement pstmt = con.prepareStatement(query);
+            pstmt.setString(1, nomCollection);
+            pstmt.setString(2, description);
+            pstmt.setInt(3, objectifTotal);
+            pstmt.setInt(4, userId); // Utilisation de userId ici
+            pstmt.executeUpdate();
 
             showAlert("Succès", "Collection ajoutée avec succès !");
             fieldNomCollection.clear();

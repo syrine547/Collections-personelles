@@ -60,20 +60,61 @@ public class DashboardController {
         }
     }
 
+    private int userId;
+
+    private void loadUserCollections() {
+        ObservableList<String> collections = getDynamicCollections();
+        comboBoxCollections.setItems(collections);  // Mise à jour de la ComboBox
+        refreshCharts(collections); // Rafraîchir les graphiques des collections
+    }
+
+    private void refreshCharts(ObservableList<String> collections) {
+        gridCharts.getChildren().clear(); // Nettoyer l'affichage avant de recharger
+
+        int colCount = 3; // Nombre de colonnes par ligne
+        int index = 0;
+
+        for (String collection : collections) {
+            try {
+                int total = getTotalForCollection(collection);
+                int objectif = getObjectifForCollection(collection);
+
+                int row = index / colCount;
+                int col = index % colCount;
+
+                ajouterPieChartDansGrille(collection, total, objectif, row, col);
+                index++;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                showAlert("Erreur", "Erreur lors du chargement des statistiques de " + collection);
+            }
+        }
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+        loadUserCollections(); // Charger les collections de l'utilisateur
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
     private ObservableList<String> getDynamicCollections() {
         ObservableList<String> collections = FXCollections.observableArrayList();
-        String query = "SELECT nomType FROM Collections.typesExistants";
+        String query = "SELECT nomType FROM Collections.typesExistants WHERE user_id = ?";
 
         try (Connection con = DataSource.getInstance().getCon();
-             Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+             PreparedStatement stmt = con.prepareStatement(query)) {
+
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 collections.add(rs.getString("nomType"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert("Erreur", "Erreur lors de la récupération des collections dynamiques : " + e.getMessage());
         }
 
         return collections;
@@ -199,6 +240,8 @@ public class DashboardController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajoutCollection.fxml"));
             Parent root = loader.load();
+            AjoutCollectionController ajoutCollectionController = loader.getController();
+            ajoutCollectionController.setUserId(userId);
             Stage stage = new Stage();
             stage.setTitle("Ajouter une collection");
             stage.setScene(new Scene(root));

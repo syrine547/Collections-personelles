@@ -9,11 +9,8 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<<<<<<< HEAD
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.AuthController" style="-fx-background-color: #f9f9f9;">
-=======
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.AuthController" style="-fx-background-color: #f9f9f9;">
->>>>>>> 8da411edc732572144affa2c65e8a036c0383ec7
+
    <children>
       <!-- Header avec couleur -->
       <Rectangle width="800.0" height="180.0" fill="#1e88e5" />
