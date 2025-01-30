@@ -54,7 +54,7 @@ public class LogsController {
         // Charger les journaux
         loadLogs();
     }
-    @FXML
+    /*@FXML
     private void handleRetourDashboard() {
         try {
             Stage currentStage = (Stage) tableLogs.getScene().getWindow();
@@ -65,6 +65,35 @@ public class LogsController {
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Erreur", "Impossible de revenir au Dashboard : " + e.getMessage());
+        }
+    }*/
+
+
+    @FXML
+    private void handleRetourDashboard() {
+        try {
+            // Récupérer l'ID utilisateur actuellement connecté
+            int userId = AuthController.currentUserId;
+
+            // Charger le FXML du Dashboard
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
+            Parent root = loader.load();
+
+            // Obtenir le contrôleur du Dashboard et passer l'ID utilisateur
+            DashboardController controller = loader.getController();
+            if (controller != null) {
+                controller.setUserId(userId);  // Passe l'ID utilisateur au contrôleur du Dashboard
+            }
+
+            // Mettre à jour la scène avec le Dashboard
+            Stage currentStage = (Stage) tableLogs.getScene().getWindow();
+            Scene scene = new Scene(root);
+            currentStage.setScene(scene);
+            currentStage.setTitle("Dashboard");
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Impossible de revenir au Dashboard : " + e.getMessage());
+
         }
     }
 

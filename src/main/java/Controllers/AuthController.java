@@ -40,6 +40,8 @@ public class AuthController {
     @FXML
     private Button createAccountButton;
 
+    public static int currentUserId;  // Stocke l'ID de l'utilisateur connecté
+
     public AuthController() {
         this.authService = new AuthService();
     }
@@ -61,6 +63,8 @@ public class AuthController {
             String[] parts = loginResult.split(":");
             int userId = Integer.parseInt(parts[0]);
             String role = parts[1];
+            AuthController.currentUserId = userId;  // Enregistre l'ID utilisateur
+
 
             if (userId == 0) {
                 showAlert("Erreur", "Erreur","L'utilisateur spécifié n'existe pas.", Alert.AlertType.INFORMATION);
@@ -68,22 +72,25 @@ public class AuthController {
             }
 
             showAlert("Connexion réussie", "Bienvenue " + username, "Vous êtes connecté en tant que " + role, Alert.AlertType.INFORMATION);
-            navigateToDashboard("Dashboard.fxml", userId);
+            navigateToDashboard(userId);
         } else {
             showAlert("Erreur de connexion", "Nom d'utilisateur ou mot de passe incorrect.", "", Alert.AlertType.ERROR);
         }
     }
 
     // Méthode pour naviguer vers le tableau de bord
-    private void navigateToDashboard(String dashboardFxml, int userId) {
+    private void navigateToDashboard(int userId) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
             Parent root = loader.load();
+
+            // Obtenir le contrôleur du Dashboard
             DashboardController controller = loader.getController();
             if (controller != null) {
-                controller.setUserId(userId);  // Appelle setUserId sur le contrôleur
+                controller.setUserId(userId);  // Passe l'ID utilisateur au Dashboard
             }
 
+            // Changer de scène
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Dashboard");
@@ -93,6 +100,7 @@ public class AuthController {
             showAlert("Erreur", "Navigation échouée", "Impossible de naviguer vers le Dashboard.", Alert.AlertType.ERROR);
         }
     }
+
 
     // Méthode pour afficher des alertes
     private void showAlert(String title, String header, String content, Alert.AlertType alertType) {
