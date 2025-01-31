@@ -8,7 +8,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import Service.AuthService;
 import javafx.fxml.FXML;
-
 import java.io.IOException;
 import java.util.Optional;
 import javax.mail.*;
@@ -19,6 +18,15 @@ import javafx.scene.control.PasswordField;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
+import javafx.scene.layout.GridPane;
+import javafx.util.Pair;
+import Service.AuthService;
+import Utils.DataSource;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 
 import static Utils.DataSource.checkEmailExists;
 
@@ -53,7 +61,6 @@ public class AuthController {
         createAccountButton.setOnAction(e -> onCreateAccountClick());
     }
 
-    // Méthode pour gérer la connexion de l'utilisateur
     private void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
@@ -77,7 +84,6 @@ public class AuthController {
             showAlert("Erreur de connexion", "Nom d'utilisateur ou mot de passe incorrect.", "", Alert.AlertType.ERROR);
         }
     }
-
     // Méthode pour naviguer vers le tableau de bord
     private void navigateToDashboard(int userId) {
         try {
@@ -121,59 +127,19 @@ public class AuthController {
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(email -> {
-            if (checkEmailExists(email)) {
-                sendPasswordResetEmail(email);
-                showAlert("Réinitialisation de mot de passe", "Email envoyé", "Un email de réinitialisation a été envoyé à " + email, Alert.AlertType.INFORMATION);
+            if (DataSource.checkEmailExists(email)) {
+                showResetPasswordPage(email);
             } else {
                 showAlert("Erreur", "Email introuvable", "L'adresse email " + email + " n'est pas enregistrée.", Alert.AlertType.ERROR);
             }
         });
     }
 
-    // Classe interne pour envoyer un email
-    public static class EmailService {
-        private static final String SENDER_EMAIL = "votre_email@gmail.com"; // Remplacez par votre email
-        private static final String SENDER_PASSWORD = "votre_mot_de_passe"; // Remplacez par votre mot de passe d'application
-
-        public static void sendPasswordResetEmail(String recipientEmail) {
-            Properties properties = new Properties();
-            properties.put("mail.smtp.auth", "true");
-            properties.put("mail.smtp.starttls.enable", "true");
-            properties.put("mail.smtp.host", "smtp.gmail.com");
-            properties.put("mail.smtp.port", "587");
-
-            Session session = Session.getInstance(properties, new Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(SENDER_EMAIL, SENDER_PASSWORD);
-                }
-            });
-
-            try {
-                Message message = new MimeMessage(session);
-                message.setFrom(new InternetAddress(SENDER_EMAIL));
-                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
-                message.setSubject("Réinitialisation du mot de passe");
-                message.setText("Bonjour,\n\nCliquez sur le lien suivant pour réinitialiser votre mot de passe :\n\n" +
-                        "https://votre_site.com/reinitialisation-mot-de-passe?email=" + recipientEmail);
-
-                Transport.send(message);
-                System.out.println("Email de réinitialisation envoyé à : " + recipientEmail);
-            } catch (MessagingException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    // Méthode pour envoyer l'email de réinitialisation
-    private void sendPasswordResetEmail(String email) {
-        EmailService.sendPasswordResetEmail(email);
-    }
-
     private boolean addUser(String username, String password, String email, String nom, String prenom, String dateNaissance, String adresse, String telephone, String profession, String nationalite, String langues) {
         // Appeler la méthode addUser de AuthService pour ajouter un utilisateur
         return authService.addUser(username, password, email, nom, prenom, dateNaissance, adresse, telephone, profession, nationalite, langues);
     }
+
 
     // Méthode pour créer un compte
     private void onCreateAccountClick() {
@@ -249,6 +215,68 @@ public class AuthController {
             } else {
                 showAlert("Erreur", "Échec de création", "Une erreur est survenue lors de la création du compte.", Alert.AlertType.ERROR);
             }
+        }
+    }
+
+    private void showResetPasswordPage(String email) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Réinitialiser le mot de passe");
+        dialog.setHeaderText("Veuillez entrer votre nouveau mot de passe.");
+
+        PasswordField newPasswordField = new PasswordField();
+        newPasswordField.setPromptText("Nouveau mot de passe");
+
+        PasswordField confirmPasswordField = new PasswordField();
+        confirmPasswordField.setPromptText("Confirmer le mot de passe");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        grid.add(new Label("Nouveau mot de passe:"), 0, 0);
+        grid.add(newPasswordField, 1, 0);
+        grid.add(new Label("Confirmer mot de passe:"), 0, 1);
+        grid.add(confirmPasswordField, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        Optional<ButtonType> result = dialog.showAndWait();
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            String newPassword = newPasswordField.getText();
+            String confirmPassword = confirmPasswordField.getText();
+
+            if (newPassword.equals(confirmPassword)) {
+                boolean isUpdated = updatePassword(email, newPassword);
+                if (isUpdated) {
+                    showAlert("Succès", "Mot de passe réinitialisé", "Votre mot de passe a été réinitialisé avec succès.", Alert.AlertType.INFORMATION);
+                } else {
+                    showAlert("Erreur", "Échec de la mise à jour", "Une erreur est survenue lors de la mise à jour du mot de passe.", Alert.AlertType.ERROR);
+                }
+            } else {
+                showAlert("Erreur", "Mots de passe non correspondants", "Les mots de passe ne correspondent pas. Veuillez réessayer.", Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    public boolean updatePassword(String email, String newPassword) {
+        System.out.println("Tentative de mise à jour du mot de passe pour l'email : " + email);
+        String sql = "UPDATE users SET password = ? WHERE email = ?";
+
+        try (Connection conn = DataSource.getInstance().getCon();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, newPassword);
+            stmt.setString(2, email);
+
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Lignes affectées : " + rowsAffected);
+
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
