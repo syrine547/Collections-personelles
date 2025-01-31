@@ -7,7 +7,7 @@ public class DataSource {
     private static DataSource data;
     private final String url = "jdbc:mysql://localhost:3306/Collections"; // Première base de données
     private final String user = "root";
-    private final String pass = "2807";
+    private final String pass = "root";
 
     private DataSource() {
         try {

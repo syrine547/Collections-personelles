@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -38,6 +39,9 @@ public class DashboardController {
     @FXML
     private GridPane gridCharts;
 
+
+    @FXML
+    private Button btnProfil;
 
     @FXML
     public void initialize() {
@@ -398,10 +402,6 @@ public class DashboardController {
         alert.setContentText(content);
         alert.showAndWait();
     }
-    @FXML
-    private void handleNavigateToProfil(ActionEvent event) {
-        System.out.println("Naviguer vers le Profil");
-    }
 
     @FXML
     private void handleLogout(ActionEvent event) {
@@ -421,4 +421,24 @@ public class DashboardController {
             //showAlert("Erreur", "Erreur lors de la navigation", "Impossible d'ouvrir le Dashboard.", Alert.AlertType.ERROR);
         }
     }
+
+    @FXML
+    public void handleNavigateToProfil(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Profil.fxml"));
+            Parent root = loader.load();
+
+            // Si vous avez besoin de transmettre des données, utilisez le controller
+            ProfilController profilController = loader.getController();
+            profilController.setUserId(AuthController.currentUserId);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Impossible d'ouvrir la page du profil: " + e.getMessage());
+        }
+    }
+
 }
