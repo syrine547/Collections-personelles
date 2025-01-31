@@ -49,12 +49,12 @@ public class AjoutCollectionController {
 
         // Validation
         if (nomCollection.isEmpty()) {
-            showAlert("Erreur", "Le nom de la collection est obligatoire.");
+            showAlert("Erreur", "Le nom de la collection est obligatoire.", Alert.AlertType.ERROR);
             return;
         }
 
         if (nomCollection.matches(".*\\s.*")) {
-            showAlert("Erreur", "Le nom de la collection ne doit pas contenir d'espaces.");
+            showAlert("Erreur", "Le nom de la collection ne doit pas contenir d'espaces.", Alert.AlertType.ERROR);
             return;
         }
 
@@ -64,7 +64,7 @@ public class AjoutCollectionController {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            showAlert("Erreur", "L'objectif total doit être un nombre entier positif.");
+            showAlert("Erreur", "L'objectif total doit être un nombre entier positif.", Alert.AlertType.ERROR);
             return;
         }
 
@@ -83,12 +83,12 @@ public class AjoutCollectionController {
                 String typeAttribut = comboType.getValue();
 
                 if (nomAttribut.isEmpty() || typeAttribut == null) {
-                    showAlert("Erreur", "Veuillez remplir tous les champs d'attribut.");
+                    showAlert("Erreur", "Veuillez remplir tous les champs d'attribut.", Alert.AlertType.ERROR);
                     return;
                 }
                 // Validation des noms d'attributs pour éviter les erreurs SQL
                 if (nomAttribut.matches(".*[`'\"\\\\;].*")) { // Caractères interdits
-                    showAlert("Erreur", "Les noms d'attribut ne doivent pas contenir les caractères : ` ' \" \\ ;");
+                    showAlert("Erreur", "Les noms d'attribut ne doivent pas contenir les caractères : ` ' \" \\ ;", Alert.AlertType.ERROR);
                     return;
                 }
                 sql.append("`").append(nomAttribut).append("` ").append(typeAttribut).append(", ");
@@ -113,7 +113,7 @@ public class AjoutCollectionController {
                 if (rs.next() && rs.getInt(1) == 0) {
                     System.out.println("userId: " + userId);  // Pour vérifier la valeur de userId
 
-                    showAlert("Erreur", "L'utilisateur spécifié n'existe pas.");
+                    showAlert("Erreur", "L'utilisateur spécifié n'existe pas.", Alert.AlertType.ERROR);
                     return;
                 }
             }
@@ -130,7 +130,7 @@ public class AjoutCollectionController {
             pstmt.setInt(4, userId); // Utilisation de userId ici
             pstmt.executeUpdate();
 
-            showAlert("Succès", "Collection ajoutée avec succès !");
+            showAlert("Succès", "Collection ajoutée avec succès !", Alert.AlertType.INFORMATION);
             fieldNomCollection.clear();
             fieldDescription.clear();
             fieldObjectifTotal.clear();
@@ -138,12 +138,12 @@ public class AjoutCollectionController {
             handleAjouterAttribut();
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert("Erreur SQL", "Échec de la création de la collection : " + e.getMessage()); // Message d'erreur plus précis
+            showAlert("Erreur SQL", "Échec de la création de la collection : " + e.getMessage(), Alert.AlertType.ERROR); // Message d'erreur plus précis
         }
     }
 
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+    private void showAlert(String title, String message, Alert.AlertType alertType) {
+        Alert alert = new Alert(alertType);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
