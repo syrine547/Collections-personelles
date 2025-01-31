@@ -1,4 +1,5 @@
 package Controllers;
+import Service.LogService;
 import Utils.DataSource;
 import Service.ServiceCollection;
 import javafx.beans.property.SimpleStringProperty;
@@ -106,7 +107,7 @@ public class GenericCollectionController {
                 if (success) {
                     tableElements.getItems().remove(item); // Mise à jour locale
                     showAlert("Succès", "Élément supprimé avec succès !");
-                    logAction("Suppression d'un élément", getCurrentUserId(), getCollectionId()); // Journalisation
+                    logAction("Suppression d'un élément", getCollectionId()); // Journalisation
                 } else {
                     showAlert("Erreur", "Impossible de supprimer l'élément.");
                 }
@@ -126,7 +127,7 @@ public class GenericCollectionController {
                 int id = (int) rowData.get("id");
                 boolean success = service.updateElement(id, "id", rowData);
                 if (success) {
-                    logAction("Modification d'un élément", getCurrentUserId(), getCollectionId()); // Journalisation
+                    logAction("Suppression d'un élément", getCollectionId()); // Journalisation
                 } else {
                     showAlert("Erreur", "Impossible de mettre à jour l'élément.");
                 }
@@ -198,7 +199,7 @@ public class GenericCollectionController {
                 if (service.ajouterElement(element)) {
                     showAlert("Succès", "Élément ajouté avec succès !");
                     refreshTable(); // Rafraîchir les données pour inclure le nouvel élément
-                    logAction("Ajout d'un élément", getCurrentUserId(), getCollectionId()); // Journalisation
+                    logAction("Suppression d'un élément", getCollectionId()); // Journalisation
                 } else {
                     showAlert("Erreur", "Impossible d'ajouter l'élément.");
                 }
@@ -274,29 +275,14 @@ public class GenericCollectionController {
         }
     }
 
-    private void logAction(String action, Integer userId, Integer collectionId) {
-        String sql = "INSERT INTO logss (user_id, action, collection_id, timestamp) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
-        try (Connection connection = DataSource.getInstance().getCon();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setInt(1, userId);
-            statement.setString(2, action);
-            if (collectionId != null) {
-                statement.setInt(3, collectionId);
-            } else {
-                statement.setNull(3, java.sql.Types.INTEGER);
-            }
-
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            showAlert("Erreur", "Erreur lors de la journalisation de l'action : " + e.getMessage());
-        }
+    private void logAction(String action, Integer collectionId) {
+        int userId = getCurrentUserId(); // Récupérer l'ID de l'utilisateur actuel
+        LogService.enregistrerAction(userId, action, collectionId); // Enregistrer l'action
     }
 
     private Integer getCurrentUserId() {
         // Remplacez ceci par la méthode réelle pour obtenir l'ID de l'utilisateur actuel
-        return 1; // Exemple : utilisateur fictif
+        return AuthController.currentUserId; // Exemple : utilisateur connecté
     }
 
     private Integer getCollectionId() {

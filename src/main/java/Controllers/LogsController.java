@@ -45,29 +45,51 @@ public class LogsController {
     public void initialize() {
         // Configurer les colonnes de la table
         System.out.println("✅ LogsController chargé !");
-        //colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
         colAction.setCellValueFactory(new PropertyValueFactory<>("action"));
-        //colCollectionId.setCellValueFactory(new PropertyValueFactory<>("collectionId"));
         colTimestamp.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
 
-        // Charger les journaux
-        loadLogs();
+        // Charger les journaux pour l'utilisateur actuel
+        loadLogs(getCurrentUserId());
     }
-    /*@FXML
-    private void handleRetourDashboard() {
-        try {
-            Stage currentStage = (Stage) tableLogs.getScene().getWindow();
-            Parent root = FXMLLoader.load(getClass().getResource("/Dashboard.fxml"));
-            Scene scene = new Scene(root);
-            currentStage.setScene(scene);
-            currentStage.setTitle("Dashboard");
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Erreur", "Impossible de revenir au Dashboard : " + e.getMessage());
-        }
-    }*/
 
+    private Integer getCurrentUserId() {
+        // Remplacez ceci par la méthode réelle pour obtenir l'ID de l'utilisateur actuel
+        return AuthController.currentUserId; // Exemple : utilisateur connecté
+    }
+
+    private void loadLogs(int userId) {
+        logss.clear();
+        String query = "SELECT id, user_id, action, collection_id, timestamp " +
+                "FROM Collections.logss WHERE user_id = " + userId + " ORDER BY timestamp DESC";
+        try (Connection con = DataSource.getInstance().getCon()) {
+            if (con == null || con.isClosed()) {
+                System.err.println("❌ ERREUR : Impossible d'obtenir une connexion à la base de données !");
+                return;
+            }
+            try (Statement stmt = con.createStatement();
+                 ResultSet rs = stmt.executeQuery(query)) {
+                int count = 0;
+                while (rs.next()) {
+                    LogEntry log = new LogEntry(
+                            rs.getInt("id"),
+                            rs.getInt("user_id"),
+                            rs.getString("action"),
+                            rs.getInt("collection_id"),
+                            rs.getString("timestamp")
+                    );
+                    logss.add(log);
+                    count++;
+                }
+
+                tableLogs.setItems(logss);
+                System.out.println("✅ Nombre de logs récupérés pour l'utilisateur " + userId + " : " + count);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert("Erreur", "Erreur lors du chargement des journaux : " + e.getMessage());
+        }
+    }
 
     @FXML
     private void handleRetourDashboard() {
@@ -96,7 +118,6 @@ public class LogsController {
 
         }
     }
-
     private void loadLogs() {
         logss.clear();
         String query = "SELECT id, user_id, action, collection_id, timestamp " +
@@ -151,7 +172,6 @@ public class LogsController {
             this.collectionId = collectionId;
             this.timestamp = timestamp;
         }
-
         public int getId() {
             return id;
         }
