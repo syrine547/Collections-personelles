@@ -1,34 +1,19 @@
 package Controllers;
 
-import Controllers.AjoutCollectionController;
-
 import Utils.DataSource;
-import javafx.scene.Scene;
+import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import Service.AuthService;
 import javafx.fxml.FXML;
 import java.io.IOException;
 import java.util.Optional;
-import javax.mail.*;
-import javax.mail.internet.*;
-import java.util.Properties;
 import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.stage.Stage;
 import javafx.scene.layout.GridPane;
-import javafx.util.Pair;
-import Service.AuthService;
-import Utils.DataSource;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
-
-import static Utils.DataSource.checkEmailExists;
+import java.sql.*;
 
 public class AuthController {
     private final AuthService authService;
@@ -77,8 +62,6 @@ public class AuthController {
                 showAlert("Erreur", "Erreur","L'utilisateur spécifié n'existe pas.", Alert.AlertType.INFORMATION);
                 return;
             }
-
-            showAlert("Connexion réussie", "Bienvenue " + username, "Vous êtes connecté en tant que " + role, Alert.AlertType.INFORMATION);
             navigateToDashboard(userId);
         } else {
             showAlert("Erreur de connexion", "Nom d'utilisateur ou mot de passe incorrect.", "", Alert.AlertType.ERROR);
@@ -108,7 +91,6 @@ public class AuthController {
     }
 
 
-    // Méthode pour afficher des alertes
     private void showAlert(String title, String header, String content, Alert.AlertType alertType) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
@@ -136,10 +118,8 @@ public class AuthController {
     }
 
     private boolean addUser(String username, String password, String email, String nom, String prenom, String dateNaissance, String adresse, String telephone, String profession, String nationalite, String langues) {
-        // Appeler la méthode addUser de AuthService pour ajouter un utilisateur
         return authService.addUser(username, password, email, nom, prenom, dateNaissance, adresse, telephone, profession, nationalite, langues);
     }
-
 
     // Méthode pour créer un compte
     private void onCreateAccountClick() {
@@ -156,7 +136,6 @@ public class AuthController {
         TextField emailField = new TextField();
         emailField.setPromptText("Adresse email");
 
-        // Additional fields
         TextField nomField = new TextField();
         nomField.setPromptText("Nom");
 
@@ -261,7 +240,6 @@ public class AuthController {
     }
 
     public boolean updatePassword(String email, String newPassword) {
-        System.out.println("Tentative de mise à jour du mot de passe pour l'email : " + email);
         String sql = "UPDATE users SET password = ? WHERE email = ?";
 
         try (Connection conn = DataSource.getInstance().getCon();
@@ -271,9 +249,8 @@ public class AuthController {
             stmt.setString(2, email);
 
             int rowsAffected = stmt.executeUpdate();
-            System.out.println("Lignes affectées : " + rowsAffected);
-
             return rowsAffected > 0;
+
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

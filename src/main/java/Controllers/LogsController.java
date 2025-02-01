@@ -7,17 +7,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class LogsController {
 
@@ -25,16 +19,10 @@ public class LogsController {
     private TableView<LogEntry> tableLogs;
 
     @FXML
-    private TableColumn<LogEntry, Integer> colId;
-
-    @FXML
-    private TableColumn<LogEntry, Integer> colUserId;
+    private TableColumn<LogEntry, String> colCollectionName;
 
     @FXML
     private TableColumn<LogEntry, String> colAction;
-
-    @FXML
-    private TableColumn<LogEntry, Integer> colCollectionId;
 
     @FXML
     private TableColumn<LogEntry, String> colTimestamp;
@@ -44,46 +32,46 @@ public class LogsController {
     @FXML
     public void initialize() {
         // Configurer les colonnes de la table
-        System.out.println("✅ LogsController chargé !");
-        colUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
+        colCollectionName.setCellValueFactory(new PropertyValueFactory<>("collectionName"));
         colAction.setCellValueFactory(new PropertyValueFactory<>("action"));
         colTimestamp.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
 
-        // Charger les journaux pour l'utilisateur actuel
-        loadLogs(getCurrentUserId());
+        loadLogs(getCurrentUserId()); // Charger les journaux pour l'utilisateur actuel
     }
 
     private Integer getCurrentUserId() {
-        // Remplacez ceci par la méthode réelle pour obtenir l'ID de l'utilisateur actuel
         return AuthController.currentUserId; // Exemple : utilisateur connecté
     }
 
     private void loadLogs(int userId) {
         logss.clear();
-        String query = "SELECT id, user_id, action, collection_id, timestamp " +
-                "FROM Collections.logss WHERE user_id = " + userId + " ORDER BY timestamp DESC";
-        try (Connection con = DataSource.getInstance().getCon()) {
+        String query = "SELECT l.id, l.user_id, l.action, l.collection_id, l.timestamp, " +
+                "t.nomType AS collection_name " + // Récupérer le nom de la collection
+                "FROM Collections.logss l " +
+                "LEFT JOIN Collections.typesExistants t ON l.collection_id = t.id " + // Jointure pour obtenir le nom de la collection
+                "WHERE l.user_id = ? " +
+                "ORDER BY l.timestamp DESC";
+
+        try (Connection con = DataSource.getInstance().getCon();
+             PreparedStatement stmt = con.prepareStatement(query)) {
+
             if (con == null || con.isClosed()) {
                 System.err.println("❌ ERREUR : Impossible d'obtenir une connexion à la base de données !");
                 return;
             }
-            try (Statement stmt = con.createStatement();
-                 ResultSet rs = stmt.executeQuery(query)) {
-                int count = 0;
+
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     LogEntry log = new LogEntry(
                             rs.getInt("id"),
-                            rs.getInt("user_id"),
+                            rs.getString("collection_name"), // Stocke le nom de la collection
                             rs.getString("action"),
-                            rs.getInt("collection_id"),
                             rs.getString("timestamp")
                     );
                     logss.add(log);
-                    count++;
                 }
-
                 tableLogs.setItems(logss);
-                System.out.println("✅ Nombre de logs récupérés pour l'utilisateur " + userId + " : " + count);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -94,10 +82,8 @@ public class LogsController {
     @FXML
     private void handleRetourDashboard() {
         try {
-            // Récupérer l'ID utilisateur actuellement connecté
             int userId = AuthController.currentUserId;
 
-            // Charger le FXML du Dashboard
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
             Parent root = loader.load();
 
@@ -112,40 +98,10 @@ public class LogsController {
             Scene scene = new Scene(root);
             currentStage.setScene(scene);
             currentStage.setTitle("Dashboard");
+
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Erreur", "Impossible de revenir au Dashboard : " + e.getMessage());
-
-        }
-    }
-    private void loadLogs() {
-        logss.clear();
-        String query = "SELECT id, user_id, action, collection_id, timestamp " +
-                "FROM Collections.logss ORDER BY timestamp DESC";
-        try (Connection con = DataSource.getInstance().getCon()) {
-            if (con == null || con.isClosed()) {
-                System.err.println("❌ ERREUR : Impossible d'obtenir une connexion à la base de données !");
-                return;         }
-            try (Statement stmt = con.createStatement();
-                 ResultSet rs = stmt.executeQuery(query)) {
-                int count = 0;
-                while (rs.next()) {
-                    LogEntry log = new LogEntry(
-                            rs.getInt("id"),
-                            rs.getInt("user_id"),
-                            rs.getString("action"),
-                            rs.getInt("collection_id"),
-                            rs.getString("timestamp")
-                    );
-                    logss.add(log);
-                    count++;
-                }
-
-            tableLogs.setItems(logss);
-            System.out.println("✅ Nombre de logs récupérés : " + count);
-        }} catch (SQLException e) {
-            e.printStackTrace();
-            showAlert("Erreur", "Erreur lors du chargement des journaux : " + e.getMessage());
         }
     }
 
@@ -160,32 +116,27 @@ public class LogsController {
     // Classe interne pour représenter une entrée de journal
     public static class LogEntry {
         private final int id;
-        private final int userId;
+        private final String collectionName;
         private final String action;
-        private final int collectionId;
         private final String timestamp;
 
-        public LogEntry(int id, int userId, String action, int collectionId, String timestamp) {
+        public LogEntry(int id, String collectionName, String action, String timestamp) {
             this.id = id;
-            this.userId = userId;
+            this.collectionName = collectionName;
             this.action = action;
-            this.collectionId = collectionId;
             this.timestamp = timestamp;
         }
+
         public int getId() {
             return id;
         }
 
-        public int getUserId() {
-            return userId;
+        public String getCollectionName() {
+            return collectionName;
         }
 
         public String getAction() {
             return action;
-        }
-
-        public int getCollectionId() {
-            return collectionId;
         }
 
         public String getTimestamp() {

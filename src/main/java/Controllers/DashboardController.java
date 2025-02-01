@@ -2,28 +2,21 @@ package Controllers;
 
 import Service.ServiceCollection;
 import Utils.DataSource;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
+import java.sql.*;
 import java.util.Map;
 
 public class DashboardController {
@@ -35,25 +28,15 @@ public class DashboardController {
     private Button Déconnexion;
 
     @FXML
-    private VBox vBoxCharts;
-    @FXML
     private GridPane gridCharts;
-
-
-    @FXML
-    private Button btnProfil;
 
     @FXML
     public void initialize() {
         try {
-            System.out.println("Chargement des collections dynamiques...");
             ObservableList<String> collectionsDynamiques = getDynamicCollections();
-            System.out.println("Collections trouvées : " + collectionsDynamiques);
-
             comboBoxCollections.setItems(collectionsDynamiques);
 
             for (String collection : collectionsDynamiques) {
-                System.out.println("Ajout du PieChart pour : " + collection);
                 int total = getTotalForCollection(collection);
                 int objectif = getObjectifForCollection(collection);
                 ajouterPieChart(collection, total, objectif);
@@ -100,10 +83,6 @@ public class DashboardController {
         loadUserCollections(); // Charger les collections de l'utilisateur
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
     private ObservableList<String> getDynamicCollections() {
         ObservableList<String> collections = FXCollections.observableArrayList();
         String query = "SELECT nomType FROM Collections.typesExistants WHERE user_id = ?";
@@ -134,6 +113,8 @@ public class DashboardController {
 
             Stage stage = (Stage) comboBoxCollections.getScene().getWindow();
             stage.getScene().setRoot(root);
+            stage.setTitle(collectionName);
+
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Erreur", "Erreur lors de la navigation vers la collection : " + collectionName);
@@ -208,9 +189,7 @@ public class DashboardController {
         if (selectedCollection != null) {
             // Rechercher l'action ou la page associée à la collection dans la base de données
             navigateToDynamicCollection(selectedCollection);
-        } else {
-            System.out.println("Aucune collection sélectionnée.");
-        }
+        } else { }
     }
 
     private int getTotalForCollection(String collection) throws SQLException {
@@ -360,8 +339,6 @@ public class DashboardController {
                 ajouterPieChartDansGrille(collection, total, objectif, row, col);
                 index++;
             }
-
-            showAlert("Succès", "Les données ont été rafraîchies avec succès !");
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Erreur", "Erreur lors du rafraîchissement des données : " + e.getMessage());
@@ -417,8 +394,7 @@ public class DashboardController {
             stage.show();  // Affiche la nouvelle scène
         } catch (IOException e) {
             e.printStackTrace();
-            // Vous pouvez ajouter un message d'erreur si nécessaire
-            //showAlert("Erreur", "Erreur lors de la navigation", "Impossible d'ouvrir le Dashboard.", Alert.AlertType.ERROR);
+            showAlert("Erreur", "Impossible d'ouvrir le Dashboard.");
         }
     }
 
@@ -441,5 +417,4 @@ public class DashboardController {
             showAlert("Erreur", "Impossible d'ouvrir la page du profil: " + e.getMessage());
         }
     }
-
 }

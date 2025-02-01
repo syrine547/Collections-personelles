@@ -1,12 +1,11 @@
 package Service;
 
+import Utils.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import Utils.DataSource;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

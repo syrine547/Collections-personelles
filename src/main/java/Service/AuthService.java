@@ -1,11 +1,7 @@
 package Service;
 
-import Entity.User;
 import Utils.DataSource;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class AuthService {
 
@@ -52,21 +48,4 @@ public class AuthService {
             return false;
         }
     }
-
-    public boolean updatePassword(String email, String newPassword) {
-        // Utiliser un hachage de mot de passe pour sécuriser les mots de passe (ex : BCrypt)
-        String query = "UPDATE utilisateurs SET password = ? WHERE email = ?";
-        try (Connection connection = DataSource.getInstance().getCon();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, newPassword);  // Vous pouvez hacher le mot de passe ici
-            stmt.setString(2, email);
-            int rowsUpdated = stmt.executeUpdate();
-            return rowsUpdated > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
 }

@@ -1,7 +1,7 @@
 package Controllers;
 import Service.LogService;
-import Utils.DataSource;
 import Service.ServiceCollection;
+import Utils.DataSource;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -11,9 +11,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
@@ -24,22 +22,20 @@ public class GenericCollectionController {
 
     @FXML
     private TableView<Map<String, Object>> tableElements; // Pour afficher les données
-    @FXML
-    private Button log;
+
     private String nomCollection;
+    private Integer collectionId;
 
     public void setNomCollection(String nomCollection) {
         this.nomCollection = nomCollection;
+        this.collectionId = getCollectionId(nomCollection); // Récupérer l'ID de la collection
         initialiserUI();
     }
 
     private void initialiserUI() {
         try (ServiceCollection service = new ServiceCollection(nomCollection)) {
-            // Récupérer les attributs actuels de la collection
-            List<String> attributs = service.getAttributs();
-
-            // Permettre l'édition des cellules dans la TableView
-            tableElements.setEditable(true);
+            List<String> attributs = service.getAttributs(); // Récupérer les attributs actuels de la collection
+            tableElements.setEditable(true); // Permettre l'édition des cellules dans la TableView
 
             // Configurer dynamiquement les colonnes du tableau
             tableElements.getColumns().clear();
@@ -106,8 +102,7 @@ public class GenericCollectionController {
                 boolean success = service.supprimerElement(id, "id");
                 if (success) {
                     tableElements.getItems().remove(item); // Mise à jour locale
-                    showAlert("Succès", "Élément supprimé avec succès !");
-                    logAction("Suppression d'un élément", getCollectionId()); // Journalisation
+                    logAction("Suppression d'un élément"); // Journalisation
                 } else {
                     showAlert("Erreur", "Impossible de supprimer l'élément.");
                 }
@@ -127,7 +122,7 @@ public class GenericCollectionController {
                 int id = (int) rowData.get("id");
                 boolean success = service.updateElement(id, "id", rowData);
                 if (success) {
-                    logAction("Suppression d'un élément", getCollectionId()); // Journalisation
+                    logAction("Modification d'un élément"); // Journalisation
                 } else {
                     showAlert("Erreur", "Impossible de mettre à jour l'élément.");
                 }
@@ -197,9 +192,8 @@ public class GenericCollectionController {
 
                 // Ajouter l'élément dans la base
                 if (service.ajouterElement(element)) {
-                    showAlert("Succès", "Élément ajouté avec succès !");
                     refreshTable(); // Rafraîchir les données pour inclure le nouvel élément
-                    logAction("Suppression d'un élément", getCollectionId()); // Journalisation
+                    logAction("Ajout d'un élément"); // Journalisation
                 } else {
                     showAlert("Erreur", "Impossible d'ajouter l'élément.");
                 }
@@ -212,14 +206,9 @@ public class GenericCollectionController {
 
     private void refreshTable() {
         try (ServiceCollection service = new ServiceCollection(nomCollection)) {
-            // Récupérer les données mises à jour depuis la base de données
-            List<Map<String, Object>> updatedData = service.readAll();
-
-            // Effacer les anciennes données de la TableView
-            tableElements.getItems().clear();
-
-            // Ajouter les nouvelles données
-            tableElements.getItems().addAll(updatedData);
+            List<Map<String, Object>> updatedData = service.readAll(); // Récupérer les données mises à jour depuis la base de données
+            tableElements.getItems().clear(); // Effacer les anciennes données de la TableView
+            tableElements.getItems().addAll(updatedData); // Ajouter les nouvelles données
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -230,8 +219,7 @@ public class GenericCollectionController {
     @FXML
     private void handleRetourDashboard() {
         try {
-            // Récupérer l'ID utilisateur actuellement connecté
-            int userId = AuthController.currentUserId;
+            int userId = AuthController.currentUserId; // Récupérer l'ID utilisateur actuellement connecté
 
             // Charger le FXML du Dashboard
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Dashboard.fxml"));
@@ -242,7 +230,6 @@ public class GenericCollectionController {
             if (controller != null) {
                 controller.setUserId(userId);  // Passe l'ID utilisateur au contrôleur du Dashboard
             }
-
             // Mettre à jour la scène avec le Dashboard
             Stage currentStage = (Stage) tableElements.getScene().getWindow();
             Scene scene = new Scene(root);
@@ -251,19 +238,18 @@ public class GenericCollectionController {
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Erreur", "Impossible de revenir au Dashboard : " + e.getMessage());
-
         }
     }
 
     @FXML
     private void handleaffichelog() {
         try {
-            Stage currentStage = (Stage) tableElements.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/journalisation.fxml"));
             if (getClass().getResource("/journalisation.fxml") == null) {
                 throw new IOException("Fichier journalisation.fxml introuvable !"); }
             Parent root = loader.load();
             Scene scene = new Scene(root);
+            Stage currentStage = (Stage) tableElements.getScene().getWindow();
             currentStage.setScene(scene);
             currentStage.setTitle("Journal");
         } catch (IOException e) {
@@ -275,19 +261,30 @@ public class GenericCollectionController {
         }
     }
 
-    private void logAction(String action, Integer collectionId) {
+    private void logAction(String action) {
         int userId = getCurrentUserId(); // Récupérer l'ID de l'utilisateur actuel
         LogService.enregistrerAction(userId, action, collectionId); // Enregistrer l'action
     }
 
     private Integer getCurrentUserId() {
-        // Remplacez ceci par la méthode réelle pour obtenir l'ID de l'utilisateur actuel
         return AuthController.currentUserId; // Exemple : utilisateur connecté
     }
 
-    private Integer getCollectionId() {
-        // Remplacez ceci par la méthode réelle pour obtenir l'ID de la collection actuelle
-        return 1; // Exemple : collection fictive
+    private Integer getCollectionId(String nomCollection) {
+        String query = "SELECT id FROM Collections.typesExistants WHERE nomType = ?";
+        try (Connection conn = DataSource.getInstance().getCon();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, nomCollection);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private void showAlert(String title, String content) {

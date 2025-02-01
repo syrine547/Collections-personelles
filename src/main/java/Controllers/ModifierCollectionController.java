@@ -1,18 +1,15 @@
 package Controllers;
+
 import Service.ServiceCollection;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-
 import javafx. geometry. Insets;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -108,8 +105,7 @@ public class ModifierCollectionController {
         });
 
         dialog.showAndWait().ifPresent(nouvelAttribut -> {
-            // Ajouter l'attribut localement
-            attributs.add(nouvelAttribut);
+            attributs.add(nouvelAttribut); // Ajouter l'attribut localement
         });
     }
 
@@ -138,7 +134,6 @@ public class ModifierCollectionController {
             // Synchroniser les attributs avec la base de données
             service.synchroniserAttributs(nouveauNom, attributs);
 
-            showAlert("Succès", "Les modifications ont été enregistrées avec succès !");
             ((Stage) fieldNomCollection.getScene().getWindow()).close(); // Fermer la fenêtre
         } catch (SQLException e) {
             e.printStackTrace();

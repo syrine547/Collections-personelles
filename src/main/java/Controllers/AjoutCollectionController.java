@@ -1,14 +1,12 @@
 package Controllers;
 
+import Utils.DataSource;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-
-import java.sql.*;
-
 import javafx.scene.Node;
-import Utils.DataSource;
+import java.sql.*;
 
 public class AjoutCollectionController {
 
@@ -105,14 +103,11 @@ public class AjoutCollectionController {
              Statement stmt = con.createStatement()) {
 
             // Vérifier si l'utilisateur existe dans la table `users`
-            System.out.println("userId: " + userId);  // Pour vérifier la valeur de userId
             String checkUserSQL = "SELECT COUNT(*) FROM users WHERE id = ?";
             try (PreparedStatement checkStmt = con.prepareStatement(checkUserSQL)) {
                 checkStmt.setInt(1, userId);
                 ResultSet rs = checkStmt.executeQuery();
                 if (rs.next() && rs.getInt(1) == 0) {
-                    System.out.println("userId: " + userId);  // Pour vérifier la valeur de userId
-
                     showAlert("Erreur", "L'utilisateur spécifié n'existe pas.", Alert.AlertType.ERROR);
                     return;
                 }
@@ -127,7 +122,7 @@ public class AjoutCollectionController {
             pstmt.setString(1, nomCollection);
             pstmt.setString(2, description);
             pstmt.setInt(3, objectifTotal);
-            pstmt.setInt(4, userId); // Utilisation de userId ici
+            pstmt.setInt(4, userId);
             pstmt.executeUpdate();
 
             showAlert("Succès", "Collection ajoutée avec succès !", Alert.AlertType.INFORMATION);

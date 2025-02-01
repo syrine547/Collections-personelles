@@ -2,12 +2,8 @@ package Controllers;
 
 import Utils.DataSource;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class ProfilController {
 
@@ -36,8 +32,6 @@ public class ProfilController {
         int userId = AuthController.currentUserId; // Récupère l'ID utilisateur connecté
         if (userId != 0) {
             loadUserProfile(userId);
-        } else {
-            System.out.println("Aucun utilisateur connecté.");
         }
     }
 
@@ -61,10 +55,7 @@ public class ProfilController {
                 professionLabel.setText(rs.getString("profession"));
                 nationaliteLabel.setText(rs.getString("nationalite"));
                 languesLabel.setText(rs.getString("langues"));
-            } else {
-                System.out.println("Utilisateur non trouvé.");
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -74,16 +65,5 @@ public class ProfilController {
 
     public void setUserId(int userId) {
         this.userId = userId;
-        System.out.println("Utilisateur connecté avec l'ID : " + userId);
-        // Vous pouvez ajouter ici du code pour charger les données du profil de l'utilisateur
     }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public ProfilController() {
-        // Constructeur sans argument obligatoire pour JavaFX
-    }
-
 }
